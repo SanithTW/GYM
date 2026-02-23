@@ -1,2 +1,1 @@
-# GYM
-my GYM site
+# OOP-Project
