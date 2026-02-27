@@ -1,0 +1,500 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FitConnect - Diet Plan</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: linear-gradient(to bottom right, #1a1c2e, #14162a);
+            color: #fff;
+        }
+
+        .glass-effect {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .scale-hover:hover {
+            transform: scale(1.02);
+            transition: transform 0.3s ease;
+        }
+
+        .animate-fade-in { animation: fadeIn 0.5s ease-in-out; }
+
+        .animate-slide-up {
+            animation: slideUp 0.5s ease-out forwards;
+            opacity: 0;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to   { opacity: 1; }
+        }
+
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: rgba(255,255,255,0.05); }
+        ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.2); border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.3); }
+
+        /* Modal overlay */
+        .modal-overlay {
+            background: rgba(0,0,0,0.7);
+            backdrop-filter: blur(4px);
+        }
+
+        /* Meal type badges */
+        .badge-breakfast { background: linear-gradient(135deg,#f59e0b,#f97316); }
+        .badge-lunch     { background: linear-gradient(135deg,#10b981,#059669); }
+        .badge-dinner    { background: linear-gradient(135deg,#6366f1,#8b5cf6); }
+        .badge-snack     { background: linear-gradient(135deg,#ec4899,#db2777); }
+
+        /* Day column highlight */
+        .day-col-active { border-color: rgba(139,92,246,0.6) !important; }
+
+        /* Input focus */
+        .form-input:focus {
+            outline: none;
+            border-color: #7c3aed;
+            box-shadow: 0 0 0 2px rgba(124,58,237,0.25);
+        }
+
+        /* Toggle switch */
+        .toggle-checkbox:checked { background-color: #7c3aed; border-color: #7c3aed; }
+        .toggle-checkbox:checked + .toggle-label { background-color: #7c3aed; }
+
+        /* Reminder badge pulse */
+        @keyframes ping {
+            75%,100% { transform: scale(2); opacity: 0; }
+        }
+        .reminder-ping { animation: ping 1.5s cubic-bezier(0,0,0.2,1) infinite; }
+
+        /* Calorie progress bar */
+        .cal-bar { transition: width 0.6s ease; }
+    </style>
+</head>
+<body>
+<div class="flex h-screen overflow-hidden">
+
+    <!-- ─── Sidebar ─────────────────────────────────────────────── -->
+    <aside class="hidden lg:flex flex-col w-64 h-screen glass-effect animate-fade-in flex-shrink-0">
+        <div class="p-6">
+            <a href="/user/dashboard" class="flex items-center gap-3">
+                <div class="bg-gradient-to-r from-purple-500 to-blue-500 p-2.5 rounded-lg">
+                    <i class="fas fa-dumbbell text-white"></i>
+                </div>
+                <h1 class="text-2xl font-bold bg-gradient-to-r from-blue-400 via-purple-400 to-pink-400 bg-clip-text text-transparent">FitConnect</h1>
+            </a>
+        </div>
+
+        <nav class="flex-1 p-4 space-y-2">
+            <a href="/user/dashboard" class="flex items-center gap-3 px-4 py-3 rounded-xl text-gray-300 hover:bg-white/10 transition-all duration-300">
+                <i class="fas fa-th-large"></i>
+                <span class="font-medium">Dashboard</span>
+            </a>
+            <a href="/user/profile" class="flex items-center gap-3 px-4 py-3 rounded-xl text-gray-300 hover:bg-white/10 transition-all duration-300">
+                <i class="fas fa-user"></i>
+                <span class="font-medium">Profile</span>
+            </a>
+            <a href="/user/schedule" class="flex items-center gap-3 px-4 py-3 rounded-xl text-gray-300 hover:bg-white/10 transition-all duration-300">
+                <i class="fas fa-calendar"></i>
+                <span class="font-medium">Schedule</span>
+            </a>
+            <a href="/exercises" class="flex items-center gap-3 px-4 py-3 rounded-xl text-gray-300 hover:bg-white/10 transition-all duration-300">
+                <i class="fas fa-dumbbell"></i>
+                <span class="font-medium">Exercises</span>
+            </a>
+            <a href="/monthprogress" class="flex items-center gap-3 px-4 py-3 rounded-xl text-gray-300 hover:bg-white/10 transition-all duration-300">
+                <i class="fas fa-chart-line"></i>
+                <span class="font-medium">Progress</span>
+            </a>
+            <!-- Active page -->
+            <a href="/diet-plan" class="flex items-center gap-3 px-4 py-3 rounded-xl bg-gradient-to-r from-purple-600 to-blue-600 text-white scale-hover transition-all duration-300">
+                <i class="fas fa-apple-alt"></i>
+                <span class="font-medium">Diet Plan</span>
+            </a>
+            <a href="/user/settings" class="flex items-center gap-3 px-4 py-3 rounded-xl text-gray-300 hover:bg-white/10 transition-all duration-300">
+                <i class="fas fa-cog"></i>
+                <span class="font-medium">Settings</span>
+            </a>
+        </nav>
+
+        <div class="p-4 border-t border-white/10">
+            <div class="flex items-center gap-3 mb-3">
+                <div class="h-10 w-10 rounded-full bg-gradient-to-r from-pink-500 to-purple-500 flex items-center justify-center">
+                    <i class="fas fa-user text-sm"></i>
+                </div>
+                <div>
+                    <h3 class="font-medium" th:text="${user != null ? user.name : 'Member'}">Member</h3>
+                </div>
+            </div>
+            <a href="/logout">
+                <button class="w-full mt-2 bg-white/10 hover:bg-white/20 text-white rounded-xl p-2.5 transition-all duration-300 flex items-center justify-center gap-2">
+                    <i class="fas fa-sign-out-alt"></i>
+                    <span>Log Out</span>
+                </button>
+            </a>
+        </div>
+    </aside>
+
+    <!-- ─── Mobile Header ─────────────────────────────────────────── -->
+    <header class="lg:hidden fixed w-full flex items-center justify-between p-4 glass-effect z-50">
+        <a href="/user/dashboard" class="flex items-center gap-2">
+            <div class="bg-gradient-to-r from-purple-500 to-blue-500 p-1.5 rounded-lg">
+                <i class="fas fa-dumbbell text-white"></i>
+            </div>
+            <h1 class="text-lg font-bold bg-gradient-to-r from-blue-400 via-purple-400 to-pink-400 bg-clip-text text-transparent">FitConnect</h1>
+        </a>
+        <div class="flex items-center gap-4">
+            <button id="mobileMenuBtn" class="p-1.5 rounded-lg bg-white/10">
+                <i class="fas fa-bars"></i>
+            </button>
+        </div>
+    </header>
+
+    <!-- ─── Main Content ───────────────────────────────────────────── -->
+    <main class="flex-1 overflow-y-auto py-4 lg:py-6 px-4 lg:px-8 lg:pt-6 mt-16 lg:mt-0">
+        <div class="max-w-7xl mx-auto">
+
+            <!-- Page Header -->
+            <header class="mb-8 animate-slide-up flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4" style="animation-delay:0.1s">
+                <div>
+                    <h1 class="text-3xl font-bold bg-gradient-to-r from-green-400 via-emerald-400 to-teal-400 bg-clip-text text-transparent">Diet Plan</h1>
+                    <p class="text-gray-400 mt-1">Create, manage, and track your weekly nutrition</p>
+                </div>
+                <div class="flex flex-wrap gap-3">
+                    <!-- Reminder toggle -->
+                    <button id="reminderToggleBtn" onclick="requestReminderPermission()"
+                        class="flex items-center gap-2 px-4 py-2 glass-effect rounded-xl text-sm font-medium hover:bg-white/10 transition-all">
+                        <span class="relative inline-flex items-center">
+                            <i class="fas fa-bell text-yellow-400"></i>
+                            <span id="reminderDot" class="hidden absolute -top-1 -right-1 h-2 w-2 bg-green-400 rounded-full reminder-ping"></span>
+                        </span>
+                        <span id="reminderBtnText">Enable Reminders</span>
+                    </button>
+                    <!-- Export CSV -->
+                    <button onclick="exportCSV()"
+                        class="flex items-center gap-2 px-4 py-2 glass-effect rounded-xl text-sm font-medium hover:bg-white/10 transition-all">
+                        <i class="fas fa-download text-blue-400"></i>
+                        <span>Export CSV</span>
+                    </button>
+                    <!-- Import CSV -->
+                    <label class="flex items-center gap-2 px-4 py-2 glass-effect rounded-xl text-sm font-medium hover:bg-white/10 transition-all cursor-pointer">
+                        <i class="fas fa-upload text-purple-400"></i>
+                        <span>Import CSV</span>
+                        <input type="file" accept=".csv" class="hidden" onchange="importCSV(event)">
+                    </label>
+                    <!-- Add meal -->
+                    <button onclick="openAddModal()"
+                        class="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-purple-600 to-blue-600 rounded-xl text-sm font-medium hover:opacity-90 transition-all">
+                        <i class="fas fa-plus"></i>
+                        <span>Add Meal</span>
+                    </button>
+                </div>
+            </header>
+
+            <!-- ── Summary Cards ─────────────────────────────────── -->
+            <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8 animate-slide-up" style="animation-delay:0.15s">
+                <div class="glass-effect rounded-xl p-5 scale-hover">
+                    <div class="flex justify-between items-start">
+                        <div>
+                            <p class="text-xs text-gray-400 font-medium uppercase tracking-wide">Today's Calories</p>
+                            <p id="todayCalories" class="text-2xl font-bold mt-1 text-green-400">0</p>
+                            <p class="text-xs text-gray-400 mt-1">/ <span id="dailyGoal">2000</span> kcal goal</p>
+                        </div>
+                        <div class="p-3 rounded-xl bg-gradient-to-br from-green-500 to-emerald-700">
+                            <i class="fas fa-fire-alt text-white text-sm"></i>
+                        </div>
+                    </div>
+                    <div class="mt-3 bg-white/10 rounded-full h-1.5 overflow-hidden">
+                        <div id="calorieBar" class="cal-bar h-full bg-gradient-to-r from-green-400 to-emerald-500 rounded-full" style="width:0%"></div>
+                    </div>
+                </div>
+
+                <div class="glass-effect rounded-xl p-5 scale-hover">
+                    <div class="flex justify-between items-start">
+                        <div>
+                            <p class="text-xs text-gray-400 font-medium uppercase tracking-wide">Total Meals</p>
+                            <p id="totalMeals" class="text-2xl font-bold mt-1 text-blue-400">0</p>
+                            <p class="text-xs text-gray-400 mt-1">this week</p>
+                        </div>
+                        <div class="p-3 rounded-xl bg-gradient-to-br from-blue-500 to-indigo-700">
+                            <i class="fas fa-utensils text-white text-sm"></i>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="glass-effect rounded-xl p-5 scale-hover">
+                    <div class="flex justify-between items-start">
+                        <div>
+                            <p class="text-xs text-gray-400 font-medium uppercase tracking-wide">Avg Protein</p>
+                            <p id="avgProtein" class="text-2xl font-bold mt-1 text-purple-400">0g</p>
+                            <p class="text-xs text-gray-400 mt-1">per day</p>
+                        </div>
+                        <div class="p-3 rounded-xl bg-gradient-to-br from-purple-500 to-violet-700">
+                            <i class="fas fa-drumstick-bite text-white text-sm"></i>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="glass-effect rounded-xl p-5 scale-hover">
+                    <div class="flex justify-between items-start">
+                        <div>
+                            <p class="text-xs text-gray-400 font-medium uppercase tracking-wide">Days Tracked</p>
+                            <p id="daysTracked" class="text-2xl font-bold mt-1 text-pink-400">0</p>
+                            <p class="text-xs text-gray-400 mt-1">of 7 this week</p>
+                        </div>
+                        <div class="p-3 rounded-xl bg-gradient-to-br from-pink-500 to-rose-700">
+                            <i class="fas fa-calendar-check text-white text-sm"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ── Calorie Goal Setting ───────────────────────────── -->
+            <div class="glass-effect rounded-xl p-5 mb-6 flex flex-wrap items-center gap-4 animate-slide-up" style="animation-delay:0.2s">
+                <i class="fas fa-bullseye text-yellow-400 text-lg"></i>
+                <span class="text-sm font-medium text-gray-300">Daily Calorie Goal:</span>
+                <input id="goalInput" type="number" min="500" max="5000" placeholder="2000"
+                    class="form-input bg-white/10 border border-white/20 rounded-lg px-3 py-1.5 text-sm text-white w-28 placeholder-gray-500"
+                    onchange="updateGoal(this.value)">
+                <span class="text-xs text-gray-400">kcal/day</span>
+                <div class="ml-auto flex items-center gap-2 text-sm text-gray-400">
+                    <i class="fas fa-info-circle text-blue-400"></i>
+                    <span>Data is saved locally and can be exported as CSV</span>
+                </div>
+            </div>
+
+            <!-- ── Week Navigation ───────────────────────────────── -->
+            <div class="flex items-center justify-between mb-6 animate-slide-up" style="animation-delay:0.25s">
+                <button onclick="changeWeek(-1)" class="flex items-center gap-2 px-4 py-2 glass-effect rounded-xl text-sm hover:bg-white/10 transition-all">
+                    <i class="fas fa-chevron-left"></i> Prev Week
+                </button>
+                <h2 id="weekLabel" class="text-base font-semibold text-gray-200"></h2>
+                <button onclick="changeWeek(1)" class="flex items-center gap-2 px-4 py-2 glass-effect rounded-xl text-sm hover:bg-white/10 transition-all">
+                    Next Week <i class="fas fa-chevron-right"></i>
+                </button>
+            </div>
+
+            <!-- ── Meal Type Filter Tabs ─────────────────────────── -->
+            <div class="flex flex-wrap gap-2 mb-5 animate-slide-up" style="animation-delay:0.3s">
+                <button class="filter-tab active-tab px-4 py-1.5 rounded-full text-xs font-semibold transition-all" data-filter="all" onclick="setFilter('all',this)">All Meals</button>
+                <button class="filter-tab px-4 py-1.5 rounded-full text-xs font-semibold transition-all glass-effect" data-filter="breakfast" onclick="setFilter('breakfast',this)">🌅 Breakfast</button>
+                <button class="filter-tab px-4 py-1.5 rounded-full text-xs font-semibold transition-all glass-effect" data-filter="lunch" onclick="setFilter('lunch',this)">☀️ Lunch</button>
+                <button class="filter-tab px-4 py-1.5 rounded-full text-xs font-semibold transition-all glass-effect" data-filter="dinner" onclick="setFilter('dinner',this)">🌙 Dinner</button>
+                <button class="filter-tab px-4 py-1.5 rounded-full text-xs font-semibold transition-all glass-effect" data-filter="snack" onclick="setFilter('snack',this)">🍎 Snack</button>
+            </div>
+
+            <!-- ── Weekly Grid ────────────────────────────────────── -->
+            <div id="weekGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-7 gap-3 mb-8 animate-slide-up" style="animation-delay:0.35s">
+                <!-- Generated by JS -->
+            </div>
+
+            <!-- ── Upcoming Reminders Panel ──────────────────────── -->
+            <div class="glass-effect rounded-xl p-6 mb-8 animate-slide-up" style="animation-delay:0.4s">
+                <div class="flex items-center justify-between mb-4">
+                    <h2 class="text-lg font-semibold flex items-center gap-2">
+                        <i class="fas fa-bell text-yellow-400"></i> Upcoming Reminders
+                    </h2>
+                    <span id="reminderStatus" class="text-xs px-3 py-1 rounded-full bg-red-500/20 text-red-400 font-medium">Reminders Off</span>
+                </div>
+                <div id="reminderList" class="space-y-3 text-sm text-gray-400">
+                    <p class="text-center py-4">Enable reminders to see scheduled meal alerts here.</p>
+                </div>
+            </div>
+
+            <!-- ── All Meals Table ───────────────────────────────── -->
+            <div class="glass-effect rounded-xl p-6 animate-slide-up" style="animation-delay:0.45s">
+                <div class="flex items-center justify-between mb-4">
+                    <h2 class="text-lg font-semibold flex items-center gap-2">
+                        <i class="fas fa-list-ul text-blue-400"></i> All Meals This Week
+                    </h2>
+                    <input id="searchInput" type="text" placeholder="Search meals…"
+                        class="form-input bg-white/10 border border-white/20 rounded-lg px-3 py-1.5 text-sm text-white placeholder-gray-500 w-48"
+                        oninput="renderAll()">
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-sm">
+                        <thead>
+                            <tr class="text-gray-400 border-b border-white/10">
+                                <th class="text-left pb-3 pr-4 font-medium">Meal</th>
+                                <th class="text-left pb-3 pr-4 font-medium">Type</th>
+                                <th class="text-left pb-3 pr-4 font-medium">Day</th>
+                                <th class="text-left pb-3 pr-4 font-medium">Time</th>
+                                <th class="text-left pb-3 pr-4 font-medium">Calories</th>
+                                <th class="text-left pb-3 pr-4 font-medium">Protein</th>
+                                <th class="text-left pb-3 font-medium">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="mealTableBody">
+                            <!-- Rows injected by JS -->
+                        </tbody>
+                    </table>
+                    <p id="emptyMsg" class="text-center text-gray-500 py-8 hidden">No meals found. Click "Add Meal" to get started.</p>
+                </div>
+            </div>
+        </div>
+    </main>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════
+     ADD / EDIT MEAL MODAL
+════════════════════════════════════════════════════════════ -->
+<div id="mealModal" class="hidden fixed inset-0 z-50 flex items-center justify-center modal-overlay animate-fade-in">
+    <div class="glass-effect w-full max-w-lg mx-4 rounded-2xl p-6 shadow-2xl relative">
+        <!-- Close -->
+        <button onclick="closeModal()" class="absolute top-4 right-4 text-gray-400 hover:text-white transition-colors">
+            <i class="fas fa-times text-lg"></i>
+        </button>
+
+        <h3 id="modalTitle" class="text-xl font-bold mb-5 bg-gradient-to-r from-green-400 to-teal-400 bg-clip-text text-transparent">Add New Meal</h3>
+
+        <form id="mealForm" onsubmit="saveMeal(event)" class="space-y-4">
+            <input type="hidden" id="editId">
+
+            <!-- Meal Name -->
+            <div>
+                <label class="block text-xs text-gray-400 font-medium mb-1">Meal Name *</label>
+                <input id="mealName" type="text" placeholder="e.g. Grilled Chicken Salad" required
+                    class="form-input w-full bg-white/10 border border-white/20 rounded-xl px-4 py-2.5 text-sm text-white placeholder-gray-500">
+            </div>
+
+            <!-- Type + Day -->
+            <div class="grid grid-cols-2 gap-3">
+                <div>
+                    <label class="block text-xs text-gray-400 font-medium mb-1">Meal Type *</label>
+                    <select id="mealType" required
+                        class="form-input w-full bg-white/10 border border-white/20 rounded-xl px-4 py-2.5 text-sm text-white">
+                        <option value="" disabled selected>Select type</option>
+                        <option value="breakfast">🌅 Breakfast</option>
+                        <option value="lunch">☀️ Lunch</option>
+                        <option value="dinner">🌙 Dinner</option>
+                        <option value="snack">🍎 Snack</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-xs text-gray-400 font-medium mb-1">Day *</label>
+                    <select id="mealDay" required
+                        class="form-input w-full bg-white/10 border border-white/20 rounded-xl px-4 py-2.5 text-sm text-white">
+                        <option value="" disabled selected>Select day</option>
+                        <option value="Monday">Monday</option>
+                        <option value="Tuesday">Tuesday</option>
+                        <option value="Wednesday">Wednesday</option>
+                        <option value="Thursday">Thursday</option>
+                        <option value="Friday">Friday</option>
+                        <option value="Saturday">Saturday</option>
+                        <option value="Sunday">Sunday</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Time + Calories -->
+            <div class="grid grid-cols-2 gap-3">
+                <div>
+                    <label class="block text-xs text-gray-400 font-medium mb-1">Time</label>
+                    <input id="mealTime" type="time"
+                        class="form-input w-full bg-white/10 border border-white/20 rounded-xl px-4 py-2.5 text-sm text-white">
+                </div>
+                <div>
+                    <label class="block text-xs text-gray-400 font-medium mb-1">Calories (kcal)</label>
+                    <input id="mealCalories" type="number" min="0" max="5000" placeholder="350"
+                        class="form-input w-full bg-white/10 border border-white/20 rounded-xl px-4 py-2.5 text-sm text-white placeholder-gray-500">
+                </div>
+            </div>
+
+            <!-- Protein + Carbs + Fat -->
+            <div class="grid grid-cols-3 gap-3">
+                <div>
+                    <label class="block text-xs text-gray-400 font-medium mb-1">Protein (g)</label>
+                    <input id="mealProtein" type="number" min="0" placeholder="30"
+                        class="form-input w-full bg-white/10 border border-white/20 rounded-xl px-4 py-2.5 text-sm text-white placeholder-gray-500">
+                </div>
+                <div>
+                    <label class="block text-xs text-gray-400 font-medium mb-1">Carbs (g)</label>
+                    <input id="mealCarbs" type="number" min="0" placeholder="45"
+                        class="form-input w-full bg-white/10 border border-white/20 rounded-xl px-4 py-2.5 text-sm text-white placeholder-gray-500">
+                </div>
+                <div>
+                    <label class="block text-xs text-gray-400 font-medium mb-1">Fat (g)</label>
+                    <input id="mealFat" type="number" min="0" placeholder="12"
+                        class="form-input w-full bg-white/10 border border-white/20 rounded-xl px-4 py-2.5 text-sm text-white placeholder-gray-500">
+                </div>
+            </div>
+
+            <!-- Notes -->
+            <div>
+                <label class="block text-xs text-gray-400 font-medium mb-1">Notes</label>
+                <textarea id="mealNotes" rows="2" placeholder="Preparation notes, ingredients…"
+                    class="form-input w-full bg-white/10 border border-white/20 rounded-xl px-4 py-2.5 text-sm text-white placeholder-gray-500 resize-none"></textarea>
+            </div>
+
+            <!-- Reminder toggle -->
+            <div class="flex items-center justify-between bg-white/5 rounded-xl px-4 py-3">
+                <span class="text-sm text-gray-300 flex items-center gap-2">
+                    <i class="fas fa-bell text-yellow-400"></i> Set reminder for this meal
+                </span>
+                <label class="relative inline-flex items-center cursor-pointer">
+                    <input type="checkbox" id="mealReminder" class="sr-only toggle-checkbox">
+                    <div id="toggleBg" class="w-11 h-6 bg-white/20 rounded-full peer transition-all duration-300 after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:after:translate-x-5 peer-checked:bg-purple-600"></div>
+                </label>
+            </div>
+
+            <!-- Buttons -->
+            <div class="flex gap-3 pt-2">
+                <button type="submit"
+                    class="flex-1 bg-gradient-to-r from-green-500 to-emerald-600 hover:opacity-90 text-white font-semibold py-2.5 rounded-xl transition-all">
+                    <i class="fas fa-check mr-2"></i><span id="saveBtn">Save Meal</span>
+                </button>
+                <button type="button" onclick="closeModal()"
+                    class="px-6 glass-effect hover:bg-white/10 text-white font-semibold py-2.5 rounded-xl transition-all">
+                    Cancel
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════
+     DELETE CONFIRM MODAL
+════════════════════════════════════════════════════════════ -->
+<div id="deleteModal" class="hidden fixed inset-0 z-50 flex items-center justify-center modal-overlay">
+    <div class="glass-effect rounded-2xl p-6 w-full max-w-sm mx-4 text-center shadow-2xl">
+        <div class="w-14 h-14 bg-red-500/20 rounded-full flex items-center justify-center mx-auto mb-4">
+            <i class="fas fa-trash-alt text-red-400 text-xl"></i>
+        </div>
+        <h3 class="text-lg font-bold mb-2">Delete Meal?</h3>
+        <p class="text-gray-400 text-sm mb-5">This action cannot be undone.</p>
+        <div class="flex gap-3 justify-center">
+            <button id="confirmDeleteBtn" onclick="confirmDelete()"
+                class="px-6 py-2.5 bg-red-600 hover:bg-red-700 text-white rounded-xl font-semibold text-sm transition-all">
+                Delete
+            </button>
+            <button onclick="closeDeleteModal()"
+                class="px-6 py-2.5 glass-effect hover:bg-white/10 text-white rounded-xl font-semibold text-sm transition-all">
+                Cancel
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- Toast Notification -->
+<div id="toast" class="hidden fixed bottom-6 right-6 z-50 flex items-center gap-3 px-5 py-3 rounded-xl shadow-xl text-sm font-medium text-white animate-fade-in"></div>
+
+<!-- ═══════════════════════════════════════════════════════════
+     JAVASCRIPT
+════════════════════════════════════════════════════════════ -->
+<script src="/diet_plan.js"></script>
+</body>
+</html>
