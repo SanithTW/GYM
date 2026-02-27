@@ -14,8 +14,10 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+import com.example.OOP_FitConnect.model.MembershipPlan;
 import com.example.OOP_FitConnect.model.User;
 import com.example.OOP_FitConnect.service.GuestService;
+import com.example.OOP_FitConnect.service.PlanService;
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
@@ -25,6 +27,9 @@ public class AuthController {
 
     @Autowired
     private GuestService guestService;
+
+    @Autowired
+    private PlanService planService;
 
     // Guest accessible pages
     @GetMapping("/index")
@@ -119,6 +124,13 @@ public class AuthController {
             int userId = (Integer) session.getAttribute("userId");
             User user = guestService.getUserById(userId);
             if (user != null && "USER".equals(user.getRole())) {
+                // Load current plan name for display
+                if (user.getCurrentPlanId() != null) {
+                    MembershipPlan plan = planService.getPlanById(user.getCurrentPlanId());
+                    if (plan != null) {
+                        user.setCurrentPlanName(plan.getName());
+                    }
+                }
                 model.addAttribute("user", user);
                 return "profile";
             }

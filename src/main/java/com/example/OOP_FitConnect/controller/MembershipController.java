@@ -1,27 +1,26 @@
 package com.example.OOP_FitConnect.controller;
 
-import java.time.LocalDate;
-import java.util.ArrayList;
+import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Optional;
-import java.util.stream.Collectors;
+import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
 
 import com.example.OOP_FitConnect.model.MembershipPlan;
+import com.example.OOP_FitConnect.model.Payment;
 import com.example.OOP_FitConnect.model.User;
+import com.example.OOP_FitConnect.repository.DBController;
 import com.example.OOP_FitConnect.service.GuestService;
+import com.example.OOP_FitConnect.service.PaymentHistoryService;
+import com.example.OOP_FitConnect.service.PlanService;
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
@@ -32,86 +31,90 @@ public class MembershipController {
     @Autowired
     private GuestService guestService;
 
-    private final List<MembershipPlan> membershipPlans = new ArrayList<>();
-    private final List<PlanHistoryRecord> planHistory = new ArrayList<>();
-    private int nextPlanId = 1;
-    private int nextHistoryId = 1;
-    // private final DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("MMMM dd, yyyy");
+    @Autowired
+    private PlanService planService;
 
-    public MembershipController() {
-        // Initialize with some data
-        membershipPlans.add(new MembershipPlan(nextPlanId++, "Basic", "Basic Plan", 10000.00, 12));
-        membershipPlans.add(new MembershipPlan(nextPlanId++, "Standard", "Standard Plan", 25000.00, 12));
-        membershipPlans.add(new MembershipPlan(nextPlanId++, "Premium", "Premium Plan", 35000.00, 24));
+    @Autowired
+    private PaymentHistoryService paymentHistoryService;
 
-        planHistory
-                .add(new PlanHistoryRecord(nextHistoryId++, LocalDate.of(2025, 5, 6), "Basic", 12, 10000.00, "active"));
-        planHistory.add(
-                new PlanHistoryRecord(nextHistoryId++, LocalDate.of(2025, 4, 6), "Standard", 12, 25000.00, "active"));
-        planHistory.add(
-                new PlanHistoryRecord(nextHistoryId++, LocalDate.of(2025, 3, 6), "Basic", 12, 10000.00, "expired"));
-        planHistory.add(
-                new PlanHistoryRecord(nextHistoryId++, LocalDate.of(2025, 2, 6), "Premium", 24, 35000.00, "inactive"));
-        planHistory
-                .add(new PlanHistoryRecord(nextHistoryId++, LocalDate.of(2025, 1, 6), "Basic", 12, 10000.00, "active"));
-    }
+    @Autowired
+    private DBController dbController;
 
+    // Get all plans (JSON API for frontend)
     @GetMapping("/plans")
+    @ResponseBody
     public ResponseEntity<List<MembershipPlan>> getAllMembershipPlans() {
-        return ResponseEntity.ok(membershipPlans);
+        return ResponseEntity.ok(planService.getAllPlans());
     }
 
-    @PostMapping("/plans")
-    public ResponseEntity<MembershipPlan> addMembershipPlan(@RequestBody MembershipPlan newPlan) {
-        newPlan.setId(nextPlanId++);
-        membershipPlans.add(newPlan);
-        return new ResponseEntity<>(newPlan, HttpStatus.CREATED);
-    }
-
-    @PutMapping("/plans/{id}")
-    public ResponseEntity<MembershipPlan> updateMembershipPlan(@PathVariable int id,
-                                                               @RequestBody MembershipPlan updatedPlan) {
-        Optional<MembershipPlan> planOptional = membershipPlans.stream().filter(p -> p.getId() == id).findFirst();
-        if (planOptional.isPresent()) {
-            MembershipPlan existingPlan = planOptional.get();
-            existingPlan.setName(updatedPlan.getName());
-            existingPlan.setDescription(updatedPlan.getDescription());
-            existingPlan.setPrice(updatedPlan.getPrice());
-            existingPlan.setDuration(updatedPlan.getDuration());
-            return ResponseEntity.ok(existingPlan);
-        } else {
-            return ResponseEntity.notFound().build();
-        }
-    }
-
-    @DeleteMapping("/plans/{id}")
-    public ResponseEntity<Void> deleteMembershipPlan(@PathVariable int id) {
-        boolean removed = membershipPlans.removeIf(plan -> plan.getId() == id);
-        if (removed) {
-            return ResponseEntity.noContent().build();
-        } else {
-            return ResponseEntity.notFound().build();
-        }
-    }
-
-    @GetMapping("/history")
-    public ResponseEntity<List<PlanHistoryRecord>> getAllPlanHistory(
-            @RequestParam(required = false) String searchTerm) {
-        List<PlanHistoryRecord> filteredHistory;
-        if (searchTerm != null && !searchTerm.trim().isEmpty()) {
-            String lowerSearchTerm = searchTerm.toLowerCase();
-            filteredHistory = planHistory.stream()
-                    .filter(record -> record.getFormattedDate().toLowerCase().contains(lowerSearchTerm) ||
-                            record.getPlanName().toLowerCase().contains(lowerSearchTerm) ||
-                            String.valueOf(record.getDuration()).toLowerCase().contains(lowerSearchTerm) ||
-                            String.valueOf(record.getAmount()).toLowerCase().contains(lowerSearchTerm) ||
-                            record.getStatus().toLowerCase().contains(lowerSearchTerm))
-                    .collect(Collectors.toList());
-        } else {
-            filteredHistory = planHistory;
+    // Subscribe to a plan (user action)
+    @PostMapping("/api/subscribe")
+    @ResponseBody
+    public ResponseEntity<?> subscribeToPlan(@RequestBody Map<String, Object> body, HttpServletRequest request) {
+        HttpSession session = request.getSession(false);
+        if (session == null || session.getAttribute("userId") == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of("error", "Not logged in"));
         }
 
-        return ResponseEntity.ok(filteredHistory);
+        int userId = (Integer) session.getAttribute("userId");
+        int planId = ((Number) body.get("planId")).intValue();
+        String paymentMethod = (String) body.getOrDefault("paymentMethod", "Credit Card");
+
+        MembershipPlan plan = planService.getPlanById(planId);
+        if (plan == null) {
+            return ResponseEntity.badRequest().body(Map.of("error", "Plan not found"));
+        }
+
+        // Create payment record
+        Payment payment = new Payment();
+        payment.setUserId(userId);
+        payment.setPlanId(planId);
+        payment.setAmount(plan.getPrice());
+        payment.setPaymentMethod(paymentMethod);
+        payment.setStatus("completed");
+        payment.setPaymentDate(LocalDateTime.now());
+        paymentHistoryService.addPayment(payment);
+
+        // Update user's current plan
+        dbController.updateUserPlan(userId, planId);
+
+        return ResponseEntity.ok(Map.of("message", "Subscription successful", "planName", plan.getName()));
+    }
+
+    // Get current user's plan info
+    @GetMapping("/api/my-plan")
+    @ResponseBody
+    public ResponseEntity<?> getMyPlan(HttpServletRequest request) {
+        HttpSession session = request.getSession(false);
+        if (session == null || session.getAttribute("userId") == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of("error", "Not logged in"));
+        }
+
+        int userId = (Integer) session.getAttribute("userId");
+        User user = guestService.getUserById(userId);
+        if (user == null) {
+            return ResponseEntity.badRequest().body(Map.of("error", "User not found"));
+        }
+
+        if (user.getCurrentPlanId() != null) {
+            MembershipPlan plan = planService.getPlanById(user.getCurrentPlanId());
+            if (plan != null) {
+                return ResponseEntity.ok(plan);
+            }
+        }
+        return ResponseEntity.ok(Map.of("hasPlan", false));
+    }
+
+    // Get current user's payment history
+    @GetMapping("/api/my-payments")
+    @ResponseBody
+    public ResponseEntity<List<Payment>> getMyPayments(HttpServletRequest request) {
+        HttpSession session = request.getSession(false);
+        if (session == null || session.getAttribute("userId") == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(null);
+        }
+        int userId = (Integer) session.getAttribute("userId");
+        return ResponseEntity.ok(paymentHistoryService.getPaymentsByUserId(userId));
     }
 
     @GetMapping("/monthprogress")
@@ -125,30 +128,6 @@ public class MembershipController {
             }
         }
         return "monthprogress";
-    }
-
-    private record PlanHistoryRecord(int i, LocalDate localDate, String standard, int i1, double v, String active) {
-        public String getPlanName() {
-            return null;
-        }
-
-        public char[] getDuration() {
-            return null;
-        }
-
-        public String getFormattedDate() {
-            return null;
-        }
-
-        public char[] getAmount() {
-            return null;
-        }
-
-        public String getStatus() {
-
-
-            return "";
-        }
     }
 }
 

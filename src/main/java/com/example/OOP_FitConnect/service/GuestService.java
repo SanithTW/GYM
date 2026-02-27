@@ -29,10 +29,31 @@ public class GuestService {
 
     @PostConstruct
     public void init() {
-        // Check if admin already exists
-        User existingAdmin = dbController.getUserByEmail(ADMIN_EMAIL);
-        if (existingAdmin == null) {
-            createAdminUser();
+        int maxRetries = 3;
+        int delayMs = 5000;
+        for (int attempt = 1; attempt <= maxRetries; attempt++) {
+            try {
+                // Check if admin already exists
+                User existingAdmin = dbController.getUserByEmail(ADMIN_EMAIL);
+                if (existingAdmin == null) {
+                    createAdminUser();
+                }
+                return; // success, exit
+            } catch (Exception e) {
+                if (attempt < maxRetries) {
+                    System.err.println("[GuestService] DB not ready (attempt " + attempt + "/" + maxRetries
+                            + "), retrying in " + (delayMs / 1000) + "s... Error: " + e.getMessage());
+                    try {
+                        Thread.sleep(delayMs);
+                    } catch (InterruptedException ie) {
+                        Thread.currentThread().interrupt();
+                        return;
+                    }
+                } else {
+                    System.err.println("[GuestService] WARNING: Could not connect to DB after " + maxRetries
+                            + " attempts. App will start without admin check. Error: " + e.getMessage());
+                }
+            }
         }
     }
 
@@ -92,7 +113,8 @@ public class GuestService {
     }
 
     /**
-     * Generate a 6-digit verification code for password reset and store it on the user.
+     * Generate a 6-digit verification code for password reset and store it on the
+     * user.
      */
     public int generatePasswordResetCode(User user) {
         int resetCode = 100000 + random.nextInt(900000); // 6-digit code
@@ -105,13 +127,15 @@ public class GuestService {
      * Check if the given code matches any user's verificationCode.
      */
     public boolean isValidResetCode(int code) {
-        if (code == 0) return false;
+        if (code == 0)
+            return false;
         User user = dbController.getUserByVerificationCode(code);
         return user != null;
     }
 
     public boolean resetPassword(int code, String newPassword) {
-        if (code == 0) return false;
+        if (code == 0)
+            return false;
         User user = dbController.getUserByVerificationCode(code);
         if (user != null) {
             user.setPassword(newPassword);
@@ -173,8 +197,10 @@ public class GuestService {
 
     public boolean canAccessWorkout(int userId, String workoutId) {
         User user = dbController.getUserById(userId);
-        if (user == null) return false;
-        if (user.isAdmin() || user.isGuest()) return true;
+        if (user == null)
+            return false;
+        if (user.isAdmin() || user.isGuest())
+            return true;
         return user.getWorkoutPlans().stream()
                 .anyMatch(plan -> plan.getId().equals(workoutId));
     }

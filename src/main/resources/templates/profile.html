@@ -209,6 +209,17 @@
                     </div>
 
                     <div class="mt-6 pt-4 border-t border-white/10">
+                        <div class="glass-effect rounded-xl p-4 mb-3">
+                            <div class="flex items-center gap-2 mb-2">
+                                <i class="fas fa-crown text-yellow-500"></i>
+                                <span class="text-sm font-medium text-gray-300">Current Plan</span>
+                            </div>
+                            <p class="text-lg font-semibold" id="currentPlanName" th:text="${user.currentPlanName != null ? user.currentPlanName : 'No Plan'}">No Plan</p>
+                            <a href="/UserPlans" class="inline-block mt-2 text-sm text-purple-400 hover:text-purple-300 transition-all">
+                                <i class="fas fa-exchange-alt mr-1"></i>
+                                <span th:text="${user.currentPlanId != null ? 'Change Plan' : 'Subscribe Now'}">Subscribe Now</span>
+                            </a>
+                        </div>
                         <a href="/UserPlans" class="w-full px-4 py-2 bg-white/10 hover:bg-white/20 rounded-lg text-sm transition-all">
                             <i class="fas fa-crown text-yellow-500 mr-2"></i>
                             Membership Manage Subscription

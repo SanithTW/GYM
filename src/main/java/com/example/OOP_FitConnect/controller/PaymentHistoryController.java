@@ -1,13 +1,17 @@
 package com.example.OOP_FitConnect.controller;
 
-import com.example.OOP_FitConnect.model.PaymentHistory;
-import com.example.OOP_FitConnect.service.PaymentHistoryService;
+import java.util.List;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
 
-import java.util.List;
+import com.example.OOP_FitConnect.model.Payment;
+import com.example.OOP_FitConnect.service.PaymentHistoryService;
 
 @Controller
 @RequestMapping("/admin")
@@ -25,40 +29,33 @@ public class PaymentHistoryController {
         return "Admin_payment_history";
     }
 
+    @GetMapping("/membership-plans")
+    public String membershipPlansPage() {
+        return "membership_plan_management_new";
+    }
+
     @GetMapping("/api/payments")
     @ResponseBody
-    public ResponseEntity<List<PaymentHistory>> getPayments(
-            @RequestParam(required = false) String type,
+    public ResponseEntity<List<Payment>> getPayments(
             @RequestParam(required = false) String status,
             @RequestParam(required = false) String search) {
-        
-        List<PaymentHistory> payments;
-        
+
+        List<Payment> payments;
+
         if (search != null && !search.isEmpty()) {
             payments = paymentHistoryService.searchPayments(search);
-        } else if (type != null && !type.isEmpty()) {
-            payments = paymentHistoryService.getPaymentsByType(type);
         } else if (status != null && !status.isEmpty()) {
             payments = paymentHistoryService.getPaymentsByStatus(status);
         } else {
             payments = paymentHistoryService.getAllPayments();
         }
-        
-        return ResponseEntity.ok(payments);
-    }
 
-    @PostMapping("/api/payments")
-    @ResponseBody
-    public ResponseEntity<PaymentHistory> addPayment(@RequestBody PaymentHistory payment) {
-        paymentHistoryService.addPayment(payment);
-        return ResponseEntity.ok(payment);
+        return ResponseEntity.ok(payments);
     }
 
     @GetMapping("/api/total-revenue")
     @ResponseBody
     public double getTotalRevenue() {
-        return paymentHistoryService.getAllPayments().stream()
-                .mapToDouble(PaymentHistory::getAmount)
-                .sum();
+        return paymentHistoryService.getTotalRevenue();
     }
 } 

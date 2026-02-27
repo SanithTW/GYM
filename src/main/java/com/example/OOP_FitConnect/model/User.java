@@ -10,12 +10,14 @@ public class User {
     private String password;
     private int verificationCode; // random int code for email verification & password reset
     private String branch;
+    private Integer currentPlanId; // FK to membership_plans table
 
     // Transient fields (not stored in DB)
     private String role;        // computed: ADMIN if email matches admin email
     private List<WorkoutPlan> workoutPlans;
     private Double bmi;
     private String profileImage;
+    private String currentPlanName; // transient: for display
 
     private static final String ADMIN_EMAIL = "admin@user.com";
 
@@ -132,5 +134,23 @@ public class User {
 
     public void setProfileImage(String profileImage) {
         this.profileImage = profileImage;
+    }
+
+    // Current Plan ID (stored in DB)
+    public Integer getCurrentPlanId() {
+        return currentPlanId;
+    }
+
+    public void setCurrentPlanId(Integer currentPlanId) {
+        this.currentPlanId = currentPlanId;
+    }
+
+    // Current Plan Name (transient, for display)
+    public String getCurrentPlanName() {
+        return currentPlanName;
+    }
+
+    public void setCurrentPlanName(String currentPlanName) {
+        this.currentPlanName = currentPlanName;
     }
 }
