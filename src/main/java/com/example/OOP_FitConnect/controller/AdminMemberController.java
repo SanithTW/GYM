@@ -1,15 +1,23 @@
 package com.example.OOP_FitConnect.controller;
 
-import com.example.OOP_FitConnect.model.User;
-import com.example.OOP_FitConnect.service.UserService;
-import jakarta.servlet.http.HttpServletRequest;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.*;
-import java.util.List;
-import java.util.Map;
-import java.util.HashMap;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
+
+import com.example.OOP_FitConnect.model.User;
+import com.example.OOP_FitConnect.service.UserService;
+
+import jakarta.servlet.http.HttpServletRequest;
 
 @Controller
 @RequestMapping("/admin")
@@ -24,7 +32,7 @@ public class AdminMemberController {
 
     @GetMapping("/admin/members")
     public String membersPage(HttpServletRequest request, Model model) {
-        String userId = (String) request.getSession().getAttribute("userId");
+        int userId = (Integer) request.getSession().getAttribute("userId");
         User admin = userService.getUserById(userId);
         if (admin != null && admin.isAdmin()) {
             List<User> users = userService.getAllUsers();
@@ -44,6 +52,7 @@ public class AdminMemberController {
             user.setName(name);
             user.setEmail(email);
             user.setPassword(password);
+            user.setVerificationCode(0); // admin-created users are verified
             userService.registerUser(user);
             response.put("success", true);
         } catch (Exception e) {
@@ -55,7 +64,7 @@ public class AdminMemberController {
 
     @PostMapping("/admin/api/member-update-user/{userId}")
     @ResponseBody
-    public Map<String, Object> updateUser(@PathVariable String userId, @RequestParam String name, @RequestParam String email, @RequestParam(required = false) String password) {
+    public Map<String, Object> updateUser(@PathVariable int userId, @RequestParam String name, @RequestParam String email, @RequestParam(required = false) String password) {
         Map<String, Object> response = new HashMap<>();
         User user = userService.getUserById(userId);
         if (user != null) {
@@ -73,7 +82,7 @@ public class AdminMemberController {
 
     @PostMapping("/api/member-delete-user/{userId}")
     @ResponseBody
-    public Map<String, Object> deleteUser(@PathVariable String userId) {
+    public Map<String, Object> deleteUser(@PathVariable int userId) {
         userService.deleteUser(userId);
         Map<String, Object> response = new HashMap<>();
         response.put("success", true);

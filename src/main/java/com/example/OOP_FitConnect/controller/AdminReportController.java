@@ -24,7 +24,7 @@ public class AdminReportController {
 
     @GetMapping("/admin/report")
     public String reportPage(HttpServletRequest request, Model model) {
-        String userId = (String) request.getSession().getAttribute("userId");
+        int userId = (Integer) request.getSession().getAttribute("userId");
         User admin = userService.getUserById(userId);
         if (admin != null && admin.isAdmin()) {
             Map<String, Object> stats = adminService.getDashboardStats();

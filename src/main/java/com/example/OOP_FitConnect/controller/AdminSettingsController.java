@@ -18,7 +18,7 @@ public class AdminSettingsController {
 
     @GetMapping("/admin/settings")
     public String settingsPage(HttpServletRequest request, Model model) {
-        String userId = (String) request.getSession().getAttribute("userId");
+        int userId = (Integer) request.getSession().getAttribute("userId");
         User admin = userService.getUserById(userId);
         if (admin != null && admin.isAdmin()) {
             model.addAttribute("admin", admin);
@@ -30,7 +30,7 @@ public class AdminSettingsController {
     @PostMapping("/admin/settings")
     public String updateSettings(HttpServletRequest request, @RequestParam Map<String, String> params, Model model) {
         // Implement your settings logic here
-        String userId = (String) request.getSession().getAttribute("userId");
+        int userId = (Integer) request.getSession().getAttribute("userId");
         User admin = userService.getUserById(userId);
         if (admin != null && admin.isAdmin()) {
             // Update settings as needed

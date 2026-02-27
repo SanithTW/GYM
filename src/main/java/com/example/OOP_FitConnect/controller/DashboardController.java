@@ -1,10 +1,9 @@
 package com.example.OOP_FitConnect.controller;
 
-import com.example.OOP_FitConnect.model.User;
-import com.example.OOP_FitConnect.model.WorkoutPlan;
-import com.example.OOP_FitConnect.service.GuestService;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpSession;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -15,9 +14,12 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
-import java.util.List;
-import java.util.Map;
-import java.util.HashMap;
+import com.example.OOP_FitConnect.model.User;
+import com.example.OOP_FitConnect.model.WorkoutPlan;
+import com.example.OOP_FitConnect.service.GuestService;
+
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpSession;
 
 @Controller
 public class DashboardController {
@@ -29,7 +31,7 @@ public class DashboardController {
     public String dashboard(HttpServletRequest request, Model model) {
         HttpSession session = request.getSession(false);
         if (session != null && session.getAttribute("userId") != null) {
-            String userId = (String) session.getAttribute("userId");
+            int userId = (Integer) session.getAttribute("userId");
             User user = guestService.getUserById(userId);
 
             if (user != null) {
@@ -69,7 +71,7 @@ public class DashboardController {
         HttpSession session = request.getSession(false);
 
         if (session != null && session.getAttribute("userId") != null) {
-            String userId = (String) session.getAttribute("userId");
+            int userId = (Integer) session.getAttribute("userId");
             User user = guestService.getUserById(userId);
 
             if (user != null && !user.isGuest()) {
@@ -106,7 +108,7 @@ public class DashboardController {
         HttpSession session = request.getSession(false);
 
         if (session != null && session.getAttribute("userId") != null) {
-            String userId = (String) session.getAttribute("userId");
+            int userId = (Integer) session.getAttribute("userId");
             User user = guestService.getUserById(userId);
 
             if (user != null && !user.isGuest()) {

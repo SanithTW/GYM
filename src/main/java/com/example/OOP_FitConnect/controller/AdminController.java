@@ -1,19 +1,26 @@
 package com.example.OOP_FitConnect.controller;
 
-import com.example.OOP_FitConnect.model.User;
-import com.example.OOP_FitConnect.service.AdminService;
-import com.example.OOP_FitConnect.service.GuestService;
-import com.example.OOP_FitConnect.service.UserService;
-import jakarta.servlet.http.HttpServletRequest;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import com.example.OOP_FitConnect.model.User;
+import com.example.OOP_FitConnect.service.AdminService;
+import com.example.OOP_FitConnect.service.GuestService;
+import com.example.OOP_FitConnect.service.UserService;
+
+import jakarta.servlet.http.HttpServletRequest;
 
 
 @Controller
@@ -35,7 +42,7 @@ public class AdminController {
 
     @GetMapping("/dashboard")
     public String adminDashboard(HttpServletRequest request, Model model) {
-        String userId = (String) request.getSession().getAttribute("userId");
+        int userId = (Integer) request.getSession().getAttribute("userId");
         User admin = guestService.getUserById(userId);
 
         if (admin != null && admin.isAdmin()) {
@@ -66,8 +73,8 @@ public class AdminController {
             HttpServletRequest request) {
 
         Map<String, Object> response = new HashMap<>();
-        String userId = (String) request.getSession().getAttribute("userId");
-        User currentAdmin = guestService.getUserById(userId);
+        int adminId = (Integer) request.getSession().getAttribute("userId");
+        User currentAdmin = guestService.getUserById(adminId);
 
         if (currentAdmin != null && currentAdmin.isAdmin()) {
             if (guestService.getUserByEmail(email) != null) {
@@ -90,18 +97,17 @@ public class AdminController {
     @PostMapping("/api/update-user/{userId}")
     @ResponseBody
     public ResponseEntity<Map<String, Object>> updateUser(
-            @PathVariable String userId,
+            @PathVariable int userId,
             @RequestParam String name,
             @RequestParam String email,
-            @RequestParam String role,
             HttpServletRequest request) {
 
         Map<String, Object> response = new HashMap<>();
-        String adminId = (String) request.getSession().getAttribute("userId");
+        int adminId = (Integer) request.getSession().getAttribute("userId");
         User admin = guestService.getUserById(adminId);
 
         if (admin != null && admin.isAdmin()) {
-            User updatedUser = adminService.updateUser(userId, name, email, role);
+            User updatedUser = adminService.updateUser(userId, name, email);
             if (updatedUser != null) {
                 response.put("success", true);
                 response.put("message", "User updated successfully");
@@ -117,12 +123,6 @@ public class AdminController {
         return ResponseEntity.badRequest().body(response);
     }
 
-    @GetMapping("/api/users/{role}")
-    @ResponseBody
-    public ResponseEntity<List<User>> getUsersByRole(@PathVariable String role) {
-        return ResponseEntity.ok(adminService.getUsersByRole(role));
-    }
-
     @GetMapping("/api/statistics")
     @ResponseBody
     public ResponseEntity<Map<String, Long>> getStatistics() {
@@ -132,12 +132,12 @@ public class AdminController {
     @PostMapping("/api/delete-user/{userId}")
     @ResponseBody
     public ResponseEntity<Map<String, Object>> deleteUser(
-            @PathVariable String userId,
+            @PathVariable int userId,
             HttpServletRequest request) {
 
         Map<String, Object> response = new HashMap<>();
 
-        String adminId = (String) request.getSession().getAttribute("userId");
+        int adminId = (Integer) request.getSession().getAttribute("userId");
         User admin = guestService.getUserById(adminId);
 
         if (admin != null && admin.isAdmin()) {
@@ -162,7 +162,7 @@ public class AdminController {
     }
     @GetMapping("/admin/profile")
     public String profilePage(HttpServletRequest request, Model model) {
-        String userId = (String) request.getSession().getAttribute("userId");
+        int userId = (Integer) request.getSession().getAttribute("userId");
         User admin = userService.getUserById(userId);
         if (admin != null && admin.isAdmin()) {
             model.addAttribute("admin", admin);

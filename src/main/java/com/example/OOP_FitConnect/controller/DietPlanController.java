@@ -21,7 +21,7 @@ public class DietPlanController {
     public String showDietPlanPage(HttpServletRequest request, Model model) {
         HttpSession session = request.getSession(false);
         if (session != null && session.getAttribute("userId") != null) {
-            String userId = (String) session.getAttribute("userId");
+            int userId = (Integer) session.getAttribute("userId");
             User user = guestService.getUserById(userId);
             if (user != null) {
                 model.addAttribute("user", user);

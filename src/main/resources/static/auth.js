@@ -38,41 +38,6 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    // Handle Register Form
-    const registerForm = document.getElementById('registerForm');
-    if (registerForm) {
-        registerForm.addEventListener('submit', function(e) {
-            e.preventDefault();
-            const name = document.getElementById('name').value;
-            const email = document.getElementById('email').value;
-            const password = document.getElementById('password').value;
-
-            fetch('/api/register', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/x-www-form-urlencoded'
-                },
-                body: `name=${encodeURIComponent(name)}&email=${encodeURIComponent(email)}&password=${encodeURIComponent(password)}`
-            })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.success) {
-                        showAlert(data.message, 'success');
-                        // Wait for 2 seconds before redirecting
-                        setTimeout(() => {
-                            window.location.href = '/login';
-                        }, 2000);
-                    } else {
-                        showAlert(data.message, 'error');
-                    }
-                })
-                .catch(error => {
-                    showAlert('An error occurred. Please try again.', 'error');
-                    console.error('Error:', error);
-                });
-        });
-    }
-
     // Handle Forgot Password Form
     const forgotPasswordForm = document.getElementById('forgotPasswordForm');
     if (forgotPasswordForm) {
@@ -107,7 +72,7 @@ document.addEventListener('DOMContentLoaded', function() {
     if (resetPasswordForm) {
         resetPasswordForm.addEventListener('submit', function(e) {
             e.preventDefault();
-            const token = document.getElementById('token').value;
+            const code = document.getElementById('code').value;
             const password = document.getElementById('password').value;
             const confirmPassword = document.getElementById('confirmPassword').value;
 
@@ -122,7 +87,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 headers: {
                     'Content-Type': 'application/x-www-form-urlencoded'
                 },
-                body: `token=${encodeURIComponent(token)}&password=${encodeURIComponent(password)}`
+                body: `code=${encodeURIComponent(code)}&password=${encodeURIComponent(password)}`
             })
                 .then(response => response.json())
                 .then(data => {

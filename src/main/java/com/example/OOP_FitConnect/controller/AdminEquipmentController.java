@@ -25,7 +25,7 @@ public class AdminEquipmentController {
 
     @GetMapping("/equipment")
     public String equipmentPage(HttpServletRequest request, Model model) {
-        String userId = (String) request.getSession().getAttribute("userId");
+        int userId = (Integer) request.getSession().getAttribute("userId");
         User admin = userService.getUserById(userId);
         if (admin != null && admin.isAdmin()) {
             List<Equipment> equipmentList = equipmentService.getAll();

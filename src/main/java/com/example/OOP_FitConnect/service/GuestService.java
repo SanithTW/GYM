@@ -1,16 +1,18 @@
 package com.example.OOP_FitConnect.service;
 
-import com.example.OOP_FitConnect.model.User;
-import com.example.OOP_FitConnect.model.WorkoutPlan;
-import com.example.OOP_FitConnect.repository.DBController;
+import java.util.List;
+import java.util.Random;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.stereotype.Service;
 
+import com.example.OOP_FitConnect.model.User;
+import com.example.OOP_FitConnect.model.WorkoutPlan;
+import com.example.OOP_FitConnect.repository.DBController;
+
 import jakarta.annotation.PostConstruct;
-import java.util.List;
-import java.util.UUID;
 
 @Service
 public class GuestService {
@@ -22,13 +24,14 @@ public class GuestService {
     private JavaMailSender mailSender;
 
     private static final String BASE_URL = "http://localhost:8080";
+    private static final String ADMIN_EMAIL = "admin@user.com";
+    private final Random random = new Random();
 
     @PostConstruct
     public void init() {
         // Check if admin already exists
-        User existingAdmin = dbController.getUserByEmail("admin@user.com");
+        User existingAdmin = dbController.getUserByEmail(ADMIN_EMAIL);
         if (existingAdmin == null) {
-            // Create predefined admin
             createAdminUser();
         }
     }
@@ -36,10 +39,10 @@ public class GuestService {
     private void createAdminUser() {
         User admin = new User();
         admin.setName("Admin");
-        admin.setEmail("admin@user.com");
+        admin.setEmail(ADMIN_EMAIL);
         admin.setPassword("1234567890");
-        admin.setRole("ADMIN");
-        admin.setVerified(true);
+        admin.setVerificationCode(0); // 0 = verified
+        admin.setBranch(null);
         dbController.saveUser(admin);
     }
 
@@ -51,7 +54,7 @@ public class GuestService {
         return null;
     }
 
-    public User registerUser(String name, String email, String password, String verificationToken, String branch) {
+    public User registerUser(String name, String email, String password, int verificationCode, String branch) {
         if (dbController.getUserByEmail(email) != null) {
             throw new IllegalArgumentException("Email already in use");
         }
@@ -60,8 +63,7 @@ public class GuestService {
         user.setName(name);
         user.setEmail(email);
         user.setPassword(password);
-        user.setVerificationToken(verificationToken);
-        user.setRole("USER");
+        user.setVerificationCode(verificationCode);
         user.setBranch(branch);
         dbController.saveUser(user);
         return user;
@@ -75,51 +77,56 @@ public class GuestService {
         return dbController.getUserByEmail(email);
     }
 
-    public User getUserById(String id) {
+    public User getUserById(int id) {
         return dbController.getUserById(id);
     }
 
-    public boolean verifyEmail(String token) {
-        User user = dbController.getUserByVerificationToken(token);
+    public boolean verifyEmail(int code) {
+        User user = dbController.getUserByVerificationCode(code);
         if (user != null) {
-            user.setVerified(true);
-            user.setVerificationToken(null);
+            user.setVerificationCode(0); // 0 = verified
             dbController.updateUser(user);
             return true;
         }
         return false;
     }
 
-    public String generatePasswordResetToken(User user) {
-        String resetToken = UUID.randomUUID().toString();
-        user.setResetToken(resetToken);
-        user.setResetTokenExpiry(System.currentTimeMillis() + (24 * 60 * 60 * 1000));
+    /**
+     * Generate a 6-digit verification code for password reset and store it on the user.
+     */
+    public int generatePasswordResetCode(User user) {
+        int resetCode = 100000 + random.nextInt(900000); // 6-digit code
+        user.setVerificationCode(resetCode);
         dbController.updateUser(user);
-        return resetToken;
+        return resetCode;
     }
 
-    public boolean isValidResetToken(String token) {
-        User user = dbController.getUserByResetToken(token);
-        return user != null && user.getResetTokenExpiry() > System.currentTimeMillis();
+    /**
+     * Check if the given code matches any user's verificationCode.
+     */
+    public boolean isValidResetCode(int code) {
+        if (code == 0) return false;
+        User user = dbController.getUserByVerificationCode(code);
+        return user != null;
     }
 
-    public boolean resetPassword(String token, String newPassword) {
-        User user = dbController.getUserByResetToken(token);
-        if (user != null && user.getResetTokenExpiry() > System.currentTimeMillis()) {
+    public boolean resetPassword(int code, String newPassword) {
+        if (code == 0) return false;
+        User user = dbController.getUserByVerificationCode(code);
+        if (user != null) {
             user.setPassword(newPassword);
-            user.setResetToken(null);
-            user.setResetTokenExpiry(0);
+            user.setVerificationCode(0); // clear the code
             dbController.updateUser(user);
             return true;
         }
         return false;
     }
 
-    public void updateUserBmi(String userId, double bmi) {
+    public void updateUserBmi(int userId, double bmi) {
         User user = dbController.getUserById(userId);
         if (user != null) {
             user.setBmi(bmi);
-            dbController.updateUser(user);
+            // BMI is transient, not stored in DB table
         }
     }
 
@@ -131,54 +138,53 @@ public class GuestService {
         mailSender.send(message);
     }
 
-    public void sendVerificationEmail(User user, String token) {
+    public void sendVerificationEmail(User user, int verificationCode) {
         String body = "Hello " + user.getName() + ",\n\n" +
                 "Please verify your email by clicking the link below:\n" +
-                BASE_URL + "/verify?token=" + token + "\n\n" +
+                BASE_URL + "/verify?code=" + verificationCode + "\n\n" +
                 "Thank you,\nFitConnect Team";
         sendEmail(user.getEmail(), "Verify your FitConnect account", body);
     }
 
-    public void sendPasswordResetEmail(User user, String resetToken) {
+    public void sendPasswordResetEmail(User user, int resetCode) {
         String body = "Hello " + user.getName() + ",\n\n" +
                 "Please reset your password by clicking the link below:\n" +
-                BASE_URL + "/reset-password?token=" + resetToken + "\n\n" +
-                "This link will expire in 24 hours.\n\n" +
+                BASE_URL + "/reset-password?code=" + resetCode + "\n\n" +
+                "If you did not request this, please ignore this email.\n\n" +
                 "Thank you,\nFitConnect Team";
         sendEmail(user.getEmail(), "FitConnect Password Reset", body);
     }
 
+    public int generateVerificationCode() {
+        return 100000 + random.nextInt(900000); // 6-digit code
+    }
 
-    public List<WorkoutPlan> getUserWorkoutPlans(String userId) {
+    public List<WorkoutPlan> getUserWorkoutPlans(int userId) {
         User user = dbController.getUserById(userId);
         return user != null ? user.getWorkoutPlans() : List.of();
     }
 
-    public void addWorkoutPlan(String userId, WorkoutPlan workoutPlan) {
+    public void addWorkoutPlan(int userId, WorkoutPlan workoutPlan) {
         User user = dbController.getUserById(userId);
         if (user != null) {
             user.addWorkoutPlan(workoutPlan);
-            dbController.updateUser(user);
         }
     }
 
-    public boolean canAccessWorkout(String userId, String workoutId) {
+    public boolean canAccessWorkout(int userId, String workoutId) {
         User user = dbController.getUserById(userId);
         if (user == null) return false;
-
-        if (user.isAdmin() || user.isGuest()) return true; // Guests can access if assigned.
-
+        if (user.isAdmin() || user.isGuest()) return true;
         return user.getWorkoutPlans().stream()
                 .anyMatch(plan -> plan.getId().equals(workoutId));
     }
 
-    public boolean completeWorkout(String userId, String workoutId) {
+    public boolean completeWorkout(int userId, String workoutId) {
         User user = dbController.getUserById(userId);
         if (user != null) {
             for (WorkoutPlan plan : user.getWorkoutPlans()) {
                 if (plan.getId().equals(workoutId)) {
                     plan.setCompleted(true);
-                    dbController.updateUser(user);
                     return true;
                 }
             }
@@ -186,29 +192,17 @@ public class GuestService {
         return false;
     }
 
-    public void deleteUser(String userId) {
+    public void deleteUser(int userId) {
         dbController.deleteUser(userId);
     }
 
-    // Method to create a guest user
+    // Method to create a guest user (transient, not saved to DB)
     public User createGuestUser() {
         User guestUser = new User();
+        guestUser.setId(-1); // transient guest, not in DB
         guestUser.setName("Guest");
-        guestUser.setEmail(generateGuestEmail());  // Generate a unique email for the guest
-        guestUser.setPassword(generateGuestPassword()); // Generate a random password
-        guestUser.setRole("GUEST"); // Set the role to GUEST
-        guestUser.setVerified(true); // Guests are considered verified
-        dbController.saveUser(guestUser);
+        guestUser.setEmail("guest@fitconnect.com");
+        guestUser.setRole("GUEST");
         return guestUser;
-    }
-
-    // Method to generate a unique email for guest user
-    private String generateGuestEmail() {
-        return "guest-" + UUID.randomUUID().toString() + "@fitconnect.com";
-    }
-
-    // Method to generate a random password for guest user
-    private String generateGuestPassword() {
-        return UUID.randomUUID().toString();
     }
 }

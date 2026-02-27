@@ -1,10 +1,12 @@
 package com.example.OOP_FitConnect.service;
 
 import java.util.List;
-import com.example.OOP_FitConnect.model.User;
-import com.example.OOP_FitConnect.repository.DBController;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
+import com.example.OOP_FitConnect.model.User;
+import com.example.OOP_FitConnect.repository.DBController;
 
 @Service
 
@@ -16,7 +18,7 @@ public class UserService {
         this.dbController = dbController;
     }
 
-    public User getUserById(String id) {
+    public User getUserById(int id) {
         return dbController.getUserById(id);
     }
     public List<User> getAllUsers() {
@@ -31,7 +33,7 @@ public class UserService {
         return dbController.updateUser(user);
     }
 
-    public void deleteUser(String id) {
+    public void deleteUser(int id) {
         dbController.deleteUser(id);
     }
     // Add more user-related methods as needed

@@ -1,13 +1,14 @@
 package com.example.OOP_FitConnect.service;
 
-import com.example.OOP_FitConnect.model.User;
-import com.example.OOP_FitConnect.repository.DBController;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import com.example.OOP_FitConnect.model.User;
+import com.example.OOP_FitConnect.repository.DBController;
 
 @Service
 public class AdminService {
@@ -23,25 +24,12 @@ public class AdminService {
 
         long totalUsers = users.size();
         long verifiedUsers = users.stream().filter(User::isVerified).count();
-        long activeWorkouts = users.stream()
-                .flatMap(u -> u.getWorkoutPlans().stream())
-                .filter(w -> !w.isCompleted())
-                .count();
-        long completedWorkouts = users.stream()
-                .flatMap(u -> u.getWorkoutPlans().stream())
-                .filter(w -> w.isCompleted())
-                .count();
 
         Map<String, Object> userStats = new HashMap<>();
         userStats.put("total", totalUsers);
         userStats.put("verified", verifiedUsers);
 
-        Map<String, Object> workoutStats = new HashMap<>();
-        workoutStats.put("active", activeWorkouts);
-        workoutStats.put("completed", completedWorkouts);
-
         stats.put("userStats", userStats);
-        stats.put("workoutStats", workoutStats);
 
         return stats;
     }
@@ -51,26 +39,18 @@ public class AdminService {
         admin.setName(name);
         admin.setEmail(email);
         admin.setPassword(password);
-        admin.setRole("ADMIN");
-        admin.setVerified(true);
+        admin.setVerificationCode(0); // verified
         return dbController.saveUser(admin);
     }
 
-    public User updateUser(String userId, String name, String email, String role) {
+    public User updateUser(int userId, String name, String email) {
         User user = guestService.getUserById(userId);
         if (user != null) {
             user.setName(name);
             user.setEmail(email);
-            user.setRole(role);
             return dbController.updateUser(user);
         }
         return null;
-    }
-
-    public List<User> getUsersByRole(String role) {
-        return dbController.getAllUsers().stream()
-                .filter(user -> user.getRole().equals(role))
-                .toList();
     }
 
     public Map<String, Long> getUserStatistics() {

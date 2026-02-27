@@ -1,38 +1,35 @@
 package com.example.OOP_FitConnect.model;
 
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
-import java.util.UUID;
 
 public class User {
-    private String id;
+    private int id;
     private String name;
     private String email;
     private String password;
-    private boolean verified;
-    private String verificationToken;
+    private int verificationCode; // random int code for email verification & password reset
     private String branch;
-    private String resetToken;
-    private long resetTokenExpiry;
-    private Double bmi;
+
+    // Transient fields (not stored in DB)
+    private String role;        // computed: ADMIN if email matches admin email
     private List<WorkoutPlan> workoutPlans;
-    private String role; // Added role field
-    private String profileImage; // Added profileImage field
-    private Date createdAt; // Added createdAt field
+    private Double bmi;
+    private String profileImage;
+
+    private static final String ADMIN_EMAIL = "admin@user.com";
 
     public User() {
-        this.id = UUID.randomUUID().toString();
-        this.verified = false;
         this.workoutPlans = new ArrayList<>();
-        this.role = "USER"; // Default role
-        this.createdAt = new Date(); // Initialize createdAt
+        this.role = "USER";
     }
 
-    // Existing getters and setters...
-
+    // Role helpers
     public String getRole() {
-        return role;
+        if (ADMIN_EMAIL.equalsIgnoreCase(this.email)) {
+            return "ADMIN";
+        }
+        return role != null ? role : "USER";
     }
 
     public void setRole(String role) {
@@ -40,20 +37,28 @@ public class User {
     }
 
     public boolean isAdmin() {
-        return "ADMIN".equals(role);
+        return "ADMIN".equals(getRole());
     }
+
     public boolean isGuest() {
         return "GUEST".equals(role);
     }
 
-    public String getId() {
+    // Verification helpers
+    public boolean isVerified() {
+        return verificationCode == 0; // 0 means verified (no pending code)
+    }
+
+    // ID
+    public int getId() {
         return id;
     }
 
-    public void setId(String id) {
+    public void setId(int id) {
         this.id = id;
     }
 
+    // Name
     public String getName() {
         return name;
     }
@@ -62,6 +67,7 @@ public class User {
         this.name = name;
     }
 
+    // Email
     public String getEmail() {
         return email;
     }
@@ -70,6 +76,7 @@ public class User {
         this.email = email;
     }
 
+    // Password
     public String getPassword() {
         return password;
     }
@@ -78,38 +85,25 @@ public class User {
         this.password = password;
     }
 
-    public boolean isVerified() {
-        return verified;
+    // Verification Code
+    public int getVerificationCode() {
+        return verificationCode;
     }
 
-    public void setVerified(boolean verified) {
-        this.verified = verified;
+    public void setVerificationCode(int verificationCode) {
+        this.verificationCode = verificationCode;
     }
 
-    public String getVerificationToken() {
-        return verificationToken;
+    // Branch
+    public String getBranch() {
+        return branch;
     }
 
-    public void setVerificationToken(String verificationToken) {
-        this.verificationToken = verificationToken;
+    public void setBranch(String branch) {
+        this.branch = branch;
     }
 
-    public String getResetToken() {
-        return resetToken;
-    }
-
-    public void setResetToken(String resetToken) {
-        this.resetToken = resetToken;
-    }
-
-    public long getResetTokenExpiry() {
-        return resetTokenExpiry;
-    }
-
-    public void setResetTokenExpiry(long resetTokenExpiry) {
-        this.resetTokenExpiry = resetTokenExpiry;
-    }
-
+    // BMI (transient)
     public Double getBmi() {
         return bmi;
     }
@@ -118,6 +112,7 @@ public class User {
         this.bmi = bmi;
     }
 
+    // Workout Plans (transient)
     public List<WorkoutPlan> getWorkoutPlans() {
         return workoutPlans;
     }
@@ -130,6 +125,7 @@ public class User {
         this.workoutPlans.add(workoutPlan);
     }
 
+    // Profile Image (transient)
     public String getProfileImage() {
         return profileImage;
     }
@@ -137,16 +133,4 @@ public class User {
     public void setProfileImage(String profileImage) {
         this.profileImage = profileImage;
     }
-
-    public Date getCreatedAt() {
-        return createdAt;
-    }
-
-    public void setCreatedAt(Date createdAt) {
-        this.createdAt = createdAt;
-    }
-
-    public String getBranch() {return branch; }
-
-    public void setBranch(String branch) {this.branch = branch;}
 }

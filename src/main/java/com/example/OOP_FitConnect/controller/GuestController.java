@@ -1,15 +1,17 @@
 package com.example.OOP_FitConnect.controller;
 
-import com.example.OOP_FitConnect.model.User;
-import com.example.OOP_FitConnect.service.GuestService;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpSession;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+
+import com.example.OOP_FitConnect.model.User;
+import com.example.OOP_FitConnect.service.GuestService;
+
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpSession;
 
 @Controller
 @RequestMapping("/guest")  //  Added a base path for guest-related URLs
@@ -50,14 +52,14 @@ public class GuestController {
         User guestUser = null;
 
         if (session.getAttribute("userId") == null) {
-            // Create a new guest user and store in the session
+            // Create a new guest user (transient, not saved to DB)
             guestUser = guestService.createGuestUser();
             session.setAttribute("userId", guestUser.getId());      //encapsulation
             session.setAttribute("userRole", "GUEST"); //important
             model.addAttribute("user", guestUser);  //send user to the page
         }
         else{
-            String userId = (String) session.getAttribute("userId");
+            int userId = (Integer) session.getAttribute("userId");
             guestUser = guestService.getUserById(userId);
             model.addAttribute("user", guestUser);
         }
@@ -69,7 +71,7 @@ public class GuestController {
     @PostMapping("/api/start-guest-session")
     public String startGuestSession(HttpServletRequest request) {
         HttpSession session = request.getSession();
-        User guestUser = guestService.createGuestUser();  // Create a guest user.
+        User guestUser = guestService.createGuestUser();  // Create a transient guest user.
         session.setAttribute("userId", guestUser.getId());  // Store the user's ID in the session., encapsulation
         session.setAttribute("userRole", "GUEST");
         return "redirect:/guest/dashboard"; // Redirect to the guest dashboard.
