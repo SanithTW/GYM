@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FitConnect - My Workouts</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
+        body { font-family: 'Poppins', sans-serif; background: linear-gradient(to bottom right, #1a1c2e, #14162a); color: #fff; }
+        .glass-effect { background: rgba(255,255,255,0.05); backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.1); }
+        .sidebar-link.active { background: linear-gradient(to right, #7c3aed, #2563eb); }
+        .sidebar-link:not(.active):hover { background: rgba(255,255,255,0.1); }
+    </style>
+</head>
+<body>
+<div class="flex h-screen overflow-hidden">
+
+    <!-- Sidebar -->
+    <aside class="hidden lg:flex flex-col w-64 h-screen glass-effect flex-shrink-0">
+        <div class="p-6">
+            <a href="/instructor/dashboard" class="flex items-center gap-3">
+                <div class="bg-gradient-to-r from-purple-500 to-blue-500 p-2.5 rounded-lg">
+                    <i class="fas fa-dumbbell text-white"></i>
+                </div>
+                <h1 class="text-2xl font-bold bg-gradient-to-r from-blue-400 via-purple-400 to-pink-400 bg-clip-text text-transparent">FitConnect</h1>
+            </a>
+        </div>
+        <div class="px-4 mb-4">
+            <span class="text-xs font-semibold uppercase tracking-widest text-gray-500">Instructor Panel</span>
+        </div>
+        <nav class="flex-1 px-4 space-y-2 overflow-y-auto">
+            <a href="/instructor/dashboard" class="sidebar-link flex items-center gap-3 px-4 py-3 rounded-xl text-gray-300 transition-all duration-300">
+                <i class="fas fa-th-large w-4 text-center"></i>
+                <span class="font-medium">Dashboard</span>
+            </a>
+            <a href="/instructor/create-diet-plan" class="sidebar-link flex items-center gap-3 px-4 py-3 rounded-xl text-gray-300 transition-all duration-300">
+                <i class="fas fa-apple-alt w-4 text-center"></i>
+                <span class="font-medium">Create Diet Plan</span>
+            </a>
+            <a href="/instructor/create-workout" class="sidebar-link flex items-center gap-3 px-4 py-3 rounded-xl text-gray-300 transition-all duration-300">
+                <i class="fas fa-running w-4 text-center"></i>
+                <span class="font-medium">Create Workout</span>
+            </a>
+            <a href="/instructor/members" class="sidebar-link flex items-center gap-3 px-4 py-3 rounded-xl text-gray-300 transition-all duration-300">
+                <i class="fas fa-users w-4 text-center"></i>
+                <span class="font-medium">My Members</span>
+            </a>
+            <a href="/instructor/diet-plans" class="sidebar-link flex items-center gap-3 px-4 py-3 rounded-xl text-gray-300 transition-all duration-300">
+                <i class="fas fa-clipboard-list w-4 text-center"></i>
+                <span class="font-medium">My Diet Plans</span>
+            </a>
+            <a href="/instructor/workouts" class="sidebar-link active flex items-center gap-3 px-4 py-3 rounded-xl text-white transition-all duration-300">
+                <i class="fas fa-list-alt w-4 text-center"></i>
+                <span class="font-medium">My Workouts</span>
+            </a>
+            <a href="/instructor/profile" class="sidebar-link flex items-center gap-3 px-4 py-3 rounded-xl text-gray-300 transition-all duration-300">
+                <i class="fas fa-user w-4 text-center"></i>
+                <span class="font-medium">Profile</span>
+            </a>
+            <a href="/instructor/settings" class="sidebar-link flex items-center gap-3 px-4 py-3 rounded-xl text-gray-300 transition-all duration-300">
+                <i class="fas fa-cog w-4 text-center"></i>
+                <span class="font-medium">Settings</span>
+            </a>
+        </nav>
+        <div class="p-4 border-t border-white/10">
+            <div class="flex items-center gap-3 mb-3">
+                <div class="h-10 w-10 rounded-full bg-gradient-to-r from-pink-500 to-purple-500 flex items-center justify-center flex-shrink-0">
+                    <i class="fas fa-chalkboard-teacher text-sm text-white"></i>
+                </div>
+                <div class="min-w-0">
+                    <h3 class="font-medium truncate" th:text="${instructor.name}">Instructor</h3>
+                    <p class="text-xs text-gray-400">Fitness Instructor</p>
+                </div>
+            </div>
+            <a href="/logout">
+                <button class="w-full mt-2 bg-white/10 hover:bg-white/20 text-white rounded-xl p-2.5 flex items-center justify-center gap-2 transition-all duration-300">
+                    <i class="fas fa-sign-out-alt"></i><span>Log Out</span>
+                </button>
+            </a>
+        </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="flex-1 overflow-y-auto p-6">
+        <div class="max-w-5xl mx-auto">
+
+            <!-- Header -->
+            <header class="mb-8 flex items-center justify-between">
+                <div>
+                    <h1 class="text-3xl font-bold bg-gradient-to-r from-purple-400 via-blue-400 to-indigo-400 bg-clip-text text-transparent">My Workouts</h1>
+                    <p class="text-gray-400 mt-1">View and manage the workout programs you have created</p>
+                </div>
+                <a href="/instructor/create-workout"
+                   class="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-gradient-to-r from-purple-600 to-blue-600 hover:opacity-90 text-white text-sm font-medium transition-all">
+                    <i class="fas fa-plus"></i> New Program
+                </a>
+            </header>
+
+            <!-- Flash message -->
+            <div th:if="${success}" class="mb-6 px-5 py-3 rounded-xl bg-green-500/20 text-green-400 text-sm border border-green-500/30">
+                <i class="fas fa-check-circle mr-2"></i><span th:text="${success}"></span>
+            </div>
+
+            <!-- Programs list -->
+            <div th:if="${workoutPrograms != null and !#lists.isEmpty(workoutPrograms)}" class="space-y-4">
+                <div th:each="prog : ${workoutPrograms}" class="glass-effect rounded-xl p-5">
+                    <div class="flex flex-wrap items-start justify-between gap-4">
+
+                        <!-- Info -->
+                        <div class="flex items-start gap-4 flex-1 min-w-0">
+                            <div class="h-12 w-12 rounded-xl bg-gradient-to-br from-purple-500 to-indigo-700 flex items-center justify-center flex-shrink-0">
+                                <i class="fas fa-dumbbell text-white"></i>
+                            </div>
+                            <div class="min-w-0">
+                                <h3 class="font-semibold text-base truncate" th:text="${prog.programName}">Program Name</h3>
+                                <div class="flex flex-wrap gap-2 mt-1.5 text-xs text-gray-400">
+                                    <span th:if="${prog.memberName != null}">
+                                        <i class="fas fa-user mr-1"></i><span th:text="${prog.memberName}">Member</span>
+                                    </span>
+                                    <span th:if="${prog.memberName == null}" class="text-gray-500">Unassigned</span>
+                                    <span th:if="${prog.fitnessGoal != null}" class="text-gray-500">&bull;</span>
+                                    <span th:if="${prog.fitnessGoal != null}" th:text="${prog.fitnessGoal}">Goal</span>
+                                    <span th:if="${prog.difficulty != null}" class="text-gray-500">&bull;</span>
+                                    <span th:if="${prog.difficulty != null}" th:text="${prog.difficulty}">Difficulty</span>
+                                    <span th:if="${prog.durationWeeks != null}" class="text-gray-500">&bull;</span>
+                                    <span th:if="${prog.durationWeeks != null}"><span th:text="${prog.durationWeeks}">0</span> weeks</span>
+                                    <span th:if="${prog.sessionsPerWeek != null}" class="text-gray-500">&bull;</span>
+                                    <span th:if="${prog.sessionsPerWeek != null}"><span th:text="${prog.sessionsPerWeek}">0</span>x/week</span>
+                                </div>
+                                <div th:if="${prog.description != null and prog.description != ''}"
+                                     class="text-xs text-gray-500 italic mt-1 truncate" th:text="${prog.description}">Description</div>
+                            </div>
+                        </div>
+
+                        <!-- Actions -->
+                        <div class="flex items-center gap-3 flex-shrink-0">
+                            <span th:text="${prog.status}"
+                                  th:class="${prog.status == 'ACTIVE'} ? 'text-xs px-3 py-1 rounded-full bg-blue-500/20 text-blue-400 font-medium' : 'text-xs px-3 py-1 rounded-full bg-gray-500/20 text-gray-400 font-medium'">
+                                ACTIVE
+                            </span>
+                            <form th:action="@{/instructor/delete-workout}" method="post"
+                                  onsubmit="return confirm('Delete this workout program? This cannot be undone.')">
+                                <input type="hidden" name="programId" th:value="${prog.id}">
+                                <button type="submit"
+                                        class="h-9 w-9 flex items-center justify-center rounded-xl bg-white/5 hover:bg-red-500/20 text-gray-400 hover:text-red-400 transition-all duration-200"
+                                        title="Delete program">
+                                    <i class="fas fa-trash-alt text-sm"></i>
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Empty state -->
+            <div th:if="${workoutPrograms == null or #lists.isEmpty(workoutPrograms)}"
+                 class="glass-effect rounded-xl p-16 text-center">
+                <div class="w-16 h-16 bg-purple-500/10 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <i class="fas fa-dumbbell text-3xl text-purple-400 opacity-50"></i>
+                </div>
+                <h3 class="text-lg font-semibold text-gray-300 mb-2">No Workout Programs Yet</h3>
+                <p class="text-sm text-gray-500 mb-5">You haven't created any workout programs. Start by creating your first one.</p>
+                <a href="/instructor/create-workout"
+                   class="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-gradient-to-r from-purple-600 to-blue-600 hover:opacity-90 text-white text-sm font-medium transition-all">
+                    <i class="fas fa-plus"></i> Create Workout Program
+                </a>
+            </div>
+
+        </div>
+    </main>
+</div>
+</body>
+</html>
