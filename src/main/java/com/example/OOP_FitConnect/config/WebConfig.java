@@ -10,9 +10,6 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 @Configuration
 public class WebConfig implements WebMvcConfigurer {
 
-    /**
-     * Configure static resource handling
-     */
     @Override
     public void addResourceHandlers(ResourceHandlerRegistry registry) {
         registry.addResourceHandler("/static/**")
@@ -25,14 +22,18 @@ public class WebConfig implements WebMvcConfigurer {
                 .addResourceLocations("classpath:/static/images/");
     }
 
-    /**
-     * Register the authentication filter
-     */
     @Bean
     public FilterRegistrationBean<AuthFilter> authFilter() {
         FilterRegistrationBean<AuthFilter> registrationBean = new FilterRegistrationBean<>();
         registrationBean.setFilter(new AuthFilter());
-        registrationBean.addUrlPatterns("/dashboard", "/bmi");
+        // Protect all role-restricted URL spaces
+        registrationBean.addUrlPatterns(
+                "/dashboard",
+                "/bmi",
+                "/admin/*",
+                "/instructor/*",
+                "/user/*"
+        );
         return registrationBean;
     }
 }
