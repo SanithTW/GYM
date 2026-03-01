@@ -1,0 +1,348 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FitConnect - Manage Supplements</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap"
+        rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: linear-gradient(to bottom right, #1a1c2e, #14162a);
+            color: #fff;
+        }
+
+        .glass-effect {
+            background: rgba(255, 255, 255, 0.06);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 1rem;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+        }
+
+        .animate-fade-in {
+            animation: fadeIn 0.5s ease-in-out;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+
+            to {
+                opacity: 1;
+            }
+        }
+
+        .scale-hover:hover {
+            transform: scale(1.02);
+            transition: transform 0.2s ease;
+        }
+
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 3px;
+        }
+
+        input:-webkit-autofill,
+        input:-webkit-autofill:hover,
+        input:-webkit-autofill:focus {
+            -webkit-text-fill-color: white;
+            -webkit-box-shadow: 0 0 0px 1000px #1e293b inset;
+            transition: background-color 5000s ease-in-out 0s;
+        }
+    </style>
+</head>
+
+<body class="bg-gray-900 text-white min-h-screen overflow-x-hidden">
+    <div class="flex h-screen overflow-hidden">
+        <!-- Sidebar (Matching Admin Dashboard) -->
+        <aside class="hidden lg:flex flex-col w-64 h-screen glass-effect animate-fade-in m-4 mr-0">
+            <div class="p-6">
+                <a href="/admin/dashboard" class="flex items-center gap-3">
+                    <div class="bg-gradient-to-r from-purple-500 to-blue-500 p-2.5 rounded-lg">
+                        <i class="fas fa-dumbbell text-white"></i>
+                    </div>
+                    <h1
+                        class="text-2xl font-bold bg-gradient-to-r from-blue-400 via-purple-400 to-pink-400 bg-clip-text text-transparent">
+                        FitConnect</h1>
+                </a>
+            </div>
+            <nav class="flex-1 p-4 space-y-2">
+                <a href="/admin/dashboard"
+                    class="flex items-center gap-3 px-4 py-3 rounded-xl text-gray-300 hover:bg-white/10 transition-all duration-300">
+                    <i class="fas fa-tachometer-alt"></i>
+                    <span class="font-medium">Dashboard</span>
+                </a>
+                <a href="/admin/admin/profile"
+                    class="flex items-center gap-3 px-4 py-3 rounded-xl text-gray-300 hover:bg-white/10 transition-all duration-300">
+                    <i class="fas fa-id-card"></i>
+                    <span class="font-medium">Profile</span>
+                </a>
+                <a href="/admin/admin/members"
+                    class="flex items-center gap-3 px-4 py-3 rounded-xl text-gray-300 hover:bg-white/10 transition-all duration-300">
+                    <i class="fas fa-users"></i>
+                    <span class="font-medium">Members</span>
+                </a>
+                <a href="/admin/classes"
+                    class="flex items-center gap-3 px-4 py-3 rounded-xl text-gray-300 hover:bg-white/10 transition-all duration-300">
+                    <i class="fas fa-calendar-alt"></i>
+                    <span class="font-medium">Classes</span>
+                </a>
+
+                <a href="/admin/equipment"
+                    class="flex items-center gap-3 px-4 py-3 rounded-xl text-gray-300 hover:bg-white/10 transition-all duration-300">
+                    <i class="fas fa-dumbbell"></i>
+                    <span class="font-medium">Equipment</span>
+                </a>
+                <a href="/admin/supplements/add"
+                    class="flex items-center gap-3 px-4 py-3 rounded-xl bg-gradient-to-r from-purple-600 to-blue-600 text-white scale-hover transition-all duration-300">
+                    <i class="fas fa-pills"></i>
+                    <span class="font-medium">Manage Supplements</span>
+                </a>
+                <a href="/admin/membership-plans"
+                    class="flex items-center gap-3 px-4 py-3 rounded-xl text-gray-300 hover:bg-white/10 transition-all duration-300">
+                    <i class="fas fa-tags"></i>
+                    <span class="font-medium">Membership Plans</span>
+                </a>
+            </nav>
+            <div class="p-4 border-t border-white/10">
+                <a href="/logout">
+                    <button
+                        class="w-full bg-white/10 hover:bg-white/20 text-white rounded-xl p-2.5 transition-all duration-300 flex items-center justify-center gap-2">
+                        <i class="fas fa-sign-out-alt"></i>
+                        <span>Log Out</span>
+                    </button>
+                </a>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="flex-1 overflow-y-auto p-4 lg:p-8 custom-scrollbar">
+            <div class="max-w-7xl mx-auto">
+                <!-- Header -->
+                <header class="mb-8 flex flex-col md:flex-row md:items-center justify-between gap-4">
+                    <div>
+                        <h1
+                            class="text-3xl font-bold bg-gradient-to-r from-blue-400 via-purple-400 to-pink-400 bg-clip-text text-transparent">
+                            Supplement Management</h1>
+                        <p class="text-gray-400 mt-1">Add, update, or remove supplements from the store</p>
+                    </div>
+                    <div th:if="${message}"
+                        class="bg-green-500/20 border border-green-500/50 text-green-400 px-4 py-2 rounded-xl animate-fade-in flex items-center gap-2">
+                        <i class="fas fa-check-circle"></i>
+                        <span th:text="${message}">Success message</span>
+                    </div>
+                    <div th:if="${error}"
+                        class="bg-red-500/20 border border-red-500/50 text-red-400 px-4 py-2 rounded-xl animate-fade-in flex items-center gap-2">
+                        <i class="fas fa-exclamation-triangle"></i>
+                        <span th:text="${error}">Error message</span>
+                    </div>
+                </header>
+
+                <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+                    <!-- Supplement Form -->
+                    <div class="lg:col-span-5">
+                        <div class="glass-effect p-6 sticky top-0">
+                            <h2 class="text-xl font-semibold mb-6 flex items-center gap-2">
+                                <i class="fas"
+                                    th:classappend="${supplement.id != null ? 'fa-edit' : 'fa-plus-circle'}"></i>
+                                <span th:text="${supplement.id != null ? 'Edit Supplement' : 'Add New Supplement'}">Add
+                                    New
+                                    Supplement</span>
+                            </h2>
+
+                            <form th:action="@{/admin/supplements/add}" method="post" enctype="multipart/form-data"
+                                class="space-y-4">
+                                <input type="hidden" name="id" th:value="${supplement.id}" />
+
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-400 mb-1">Product Name</label>
+                                    <input type="text" name="name" th:value="${supplement.name}" required
+                                        class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 focus:outline-none focus:border-purple-500/50 transition-all"
+                                        placeholder="e.g. Whey Protein Gold">
+                                </div>
+
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-400 mb-1">Price (Rs.)</label>
+                                    <input type="number" step="0.01" name="price" th:value="${supplement.price}"
+                                        required
+                                        class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 focus:outline-none focus:border-purple-500/50 transition-all"
+                                        placeholder="0.00">
+                                </div>
+
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-400 mb-1">Category</label>
+                                    <select name="category" required
+                                        class="w-full bg-white/10 border border-white/10 rounded-xl px-4 py-2.5 focus:outline-none focus:border-purple-500/50 transition-all appearance-none cursor-pointer">
+                                        <option value="" class="bg-gray-900">Select Category</option>
+                                        <option value="Protein" th:selected="${supplement.category == 'Protein'}"
+                                            class="bg-gray-900">Protein</option>
+                                        <option value="Performance"
+                                            th:selected="${supplement.category == 'Performance'}" class="bg-gray-900">
+                                            Performance</option>
+                                        <option value="Recovery" th:selected="${supplement.category == 'Recovery'}"
+                                            class="bg-gray-900">Recovery</option>
+                                        <option value="Vitamins" th:selected="${supplement.category == 'Vitamins'}"
+                                            class="bg-gray-900">Vitamins</option>
+                                    </select>
+                                </div>
+
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-400 mb-1">Description</label>
+                                    <textarea name="description" th:text="${supplement.description}" rows="4" required
+                                        class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 focus:outline-none focus:border-purple-500/50 transition-all resize-none"
+                                        placeholder="Describe the product benefits..."></textarea>
+                                </div>
+
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-400 mb-1">Product Image</label>
+                                    <div
+                                        class="relative h-32 w-full bg-white/5 border-2 border-dashed border-white/10 rounded-xl flex flex-col items-center justify-center hover:border-purple-500/50 transition-all cursor-pointer overflow-hidden">
+                                        <input type="file" name="image" th:required="${supplement.id == null}"
+                                            class="absolute inset-0 opacity-0 cursor-pointer z-10" id="imageInput">
+                                        <div class="text-center" id="uploadPlaceholder">
+                                            <i class="fas fa-image text-2xl text-gray-500 mb-2"></i>
+                                            <p class="text-xs text-gray-400">Click or drag to upload</p>
+                                        </div>
+                                        <img id="imagePreview"
+                                            th:src="${supplement.imagePath != null ? supplement.imagePath : ''}"
+                                            class="absolute inset-0 w-full h-full object-cover hidden"
+                                            th:classappend="${supplement.imagePath != null ? '!block' : ''}">
+                                    </div>
+                                    <p th:if="${supplement.id != null}" class="text-[10px] text-gray-500 mt-1 italic">
+                                        Leave
+                                        blank to keep current image</p>
+                                </div>
+
+                                <div class="flex gap-4 pt-4">
+                                    <button type="submit"
+                                        class="flex-1 bg-gradient-to-r from-purple-600 to-blue-600 text-white font-semibold py-3 rounded-xl scale-hover transition-all">
+                                        <span th:text="${supplement.id != null ? 'Update Product' : 'Add Product'}">Add
+                                            Product</span>
+                                    </button>
+                                    <a th:if="${supplement.id != null}" th:href="@{/admin/supplements/add}"
+                                        class="bg-white/10 hover:bg-white/20 text-white font-semibold py-3 px-6 rounded-xl transition-all text-center">
+                                        Cancel
+                                    </a>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+
+                    <!-- Supplements List -->
+                    <div class="lg:col-span-7">
+                        <div class="glass-effect overflow-hidden">
+                            <div class="p-6 border-b border-white/10 flex justify-between items-center">
+                                <h2 class="text-xl font-semibold">Existing Supplements</h2>
+                                <div class="bg-white/5 px-3 py-1 rounded-full text-xs text-gray-400 font-medium">
+                                    <span th:text="${#lists.size(supplements)}">0</span> items
+                                </div>
+                            </div>
+                            <div class="overflow-x-auto">
+                                <table class="w-full text-left">
+                                    <thead>
+                                        <tr class="text-gray-400 text-xs uppercase tracking-wider">
+                                            <th class="px-6 py-4 font-medium">Product</th>
+                                            <th class="px-6 py-4 font-medium">Category</th>
+                                            <th class="px-6 py-4 font-medium text-right">Price</th>
+                                            <th class="px-6 py-4 font-medium text-right">Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody class="divide-y divide-white/5">
+                                        <tr th:each="sup : ${supplements}" class="hover:bg-white/5 transition-colors">
+                                            <td class="px-6 py-4">
+                                                <div class="flex items-center gap-3">
+                                                    <img th:src="${sup.imagePath}"
+                                                        class="h-10 w-10 rounded-lg object-cover bg-gray-800">
+                                                    <div>
+                                                        <div class="font-medium text-sm" th:text="${sup.name}">Name
+                                                        </div>
+                                                        <div class="text-xs text-gray-500 line-clamp-1 max-w-[150px]"
+                                                            th:text="${sup.description}">Desc</div>
+                                                    </div>
+                                                </div>
+                                            </td>
+                                            <td class="px-6 py-4">
+                                                <span
+                                                    class="px-2 py-1 rounded-md text-[10px] font-bold uppercase tracking-wider"
+                                                    th:classappend="${sup.category == 'Protein' ? 'bg-blue-500/20 text-blue-400' : 
+                                                                    (sup.category == 'Performance' ? 'bg-purple-500/20 text-purple-400' : 
+                                                                    (sup.category == 'Recovery' ? 'bg-green-500/20 text-green-400' : 'bg-orange-500/20 text-orange-400'))}"
+                                                    th:text="${sup.category}">Category</span>
+                                            </td>
+                                            <td class="px-6 py-4 font-semibold text-sm text-right">
+                                                Rs.<span
+                                                    th:text="${#numbers.formatDecimal(sup.price, 0, 'COMMA', 2, 'POINT')}">0.00</span>
+                                            </td>
+                                            <td class="px-6 py-4 text-right">
+                                                <div class="flex items-center justify-end gap-2">
+                                                    <a th:href="@{/admin/supplements/edit/{id}(id=${sup.id})}"
+                                                        class="p-2 bg-blue-500/10 hover:bg-blue-500/20 text-blue-400 rounded-lg transition-all"
+                                                        title="Edit">
+                                                        <i class="fas fa-edit"></i>
+                                                    </a>
+                                                    <form th:action="@{/admin/supplements/delete/{id}(id=${sup.id})}"
+                                                        method="post"
+                                                        onsubmit="return confirm('Delete this supplement?')"
+                                                        class="inline">
+                                                        <button type="submit"
+                                                            class="p-2 bg-red-500/10 hover:bg-red-500/20 text-red-500 rounded-lg transition-all"
+                                                            title="Delete">
+                                                            <i class="fas fa-trash-alt"></i>
+                                                        </button>
+                                                    </form>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                        <tr th:if="${#lists.isEmpty(supplements)}">
+                                            <td colspan="4" class="px-6 py-12 text-center text-gray-500 italic">
+                                                No supplements added yet.
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        // Image Preview Logic
+        const imageInput = document.getElementById('imageInput');
+        const imagePreview = document.getElementById('imagePreview');
+        const uploadPlaceholder = document.getElementById('uploadPlaceholder');
+
+        imageInput.addEventListener('change', function () {
+            const file = this.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function (e) {
+                    imagePreview.src = e.target.result;
+                    imagePreview.classList.remove('hidden');
+                    imagePreview.classList.add('!block');
+                }
+                reader.readAsDataURL(file);
+            }
+        });
+    </script>
+</body>
+
+</html>

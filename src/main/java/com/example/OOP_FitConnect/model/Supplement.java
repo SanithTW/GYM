@@ -5,18 +5,19 @@ public class Supplement {
     private String name;
     private String description;
     private double price;
-    private String category; // Optional: if you have categories
+    private String category;
+    private String imagePath;
 
-    // Default constructor (required by some frameworks)
     public Supplement() {
     }
 
-    public Supplement(Long id, String name, String description, double price, String category) {
+    public Supplement(Long id, String name, String description, double price, String category, String imagePath) {
         this.id = id;
         this.name = name;
         this.description = description;
         this.price = price;
         this.category = category;
+        this.imagePath = imagePath;
     }
 
     // Getters and setters
@@ -60,6 +61,14 @@ public class Supplement {
         this.category = category;
     }
 
+    public String getImagePath() {
+        return imagePath;
+    }
+
+    public void setImagePath(String imagePath) {
+        this.imagePath = imagePath;
+    }
+
     @Override
     public String toString() {
         return "Supplement{" +
@@ -68,6 +77,7 @@ public class Supplement {
                 ", description='" + description + '\'' +
                 ", price=" + price +
                 ", category='" + category + '\'' +
+                ", imagePath='" + imagePath + '\'' +
                 '}';
     }
 }
