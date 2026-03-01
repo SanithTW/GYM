@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FitConnect - Instructors</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Poppins', sans-serif; background: linear-gradient(to bottom right, #1a1c2e, #14162a); color: #fff; }
+        .glass-effect { background: rgba(255,255,255,0.06); backdrop-filter: blur(12px); border: 1px solid rgba(255,255,255,0.1); border-radius: 1rem; box-shadow: 0 4px 12px rgba(0,0,0,0.2); }
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: rgba(255,255,255,0.05); }
+        ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.2); border-radius: 4px; }
+        .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.7); z-index: 50; display: flex; align-items: center; justify-content: center; }
+    </style>
+</head>
+<body>
+<div class="flex h-screen overflow-hidden">
+
+    <!-- Sidebar -->
+    <aside class="hidden lg:flex flex-col w-64 h-screen glass-effect flex-shrink-0">
+        <div class="p-6">
+            <a href="/admin/dashboard" class="flex items-center gap-3">
+                <div class="bg-gradient-to-r from-purple-500 to-blue-500 p-2.5 rounded-lg">
+                    <i class="fas fa-dumbbell text-white"></i>
+                </div>
+                <h1 class="text-2xl font-bold bg-gradient-to-r from-blue-400 via-purple-400 to-pink-400 bg-clip-text text-transparent">FitConnect</h1>
+            </a>
+        </div>
+        <nav class="flex-1 px-4 space-y-2 overflow-y-auto">
+            <a href="/admin/dashboard" class="flex items-center gap-3 px-4 py-3 rounded-xl text-gray-300 hover:bg-white/10 transition-all duration-300">
+                <i class="fas fa-tachometer-alt w-4 text-center"></i><span class="font-medium">Dashboard</span>
+            </a>
+            <a href="/admin/admin/profile" class="flex items-center gap-3 px-4 py-3 rounded-xl text-gray-300 hover:bg-white/10 transition-all duration-300">
+                <i class="fas fa-id-card w-4 text-center"></i><span class="font-medium">Profile</span>
+            </a>
+            <a href="/admin/admin/members" class="flex items-center gap-3 px-4 py-3 rounded-xl text-gray-300 hover:bg-white/10 transition-all duration-300">
+                <i class="fas fa-users w-4 text-center"></i><span class="font-medium">Members</span>
+            </a>
+            <a href="/admin/instructors" class="flex items-center gap-3 px-4 py-3 rounded-xl bg-gradient-to-r from-purple-600 to-blue-600 text-white transition-all duration-300">
+                <i class="fas fa-chalkboard-teacher w-4 text-center"></i><span class="font-medium">Instructors</span>
+            </a>
+            <a href="/admin/classes" class="flex items-center gap-3 px-4 py-3 rounded-xl text-gray-300 hover:bg-white/10 transition-all duration-300">
+                <i class="fas fa-calendar-alt w-4 text-center"></i><span class="font-medium">Classes</span>
+            </a>
+            <a href="/admin/equipment" class="flex items-center gap-3 px-4 py-3 rounded-xl text-gray-300 hover:bg-white/10 transition-all duration-300">
+                <i class="fas fa-dumbbell w-4 text-center"></i><span class="font-medium">Equipment</span>
+            </a>
+            <a href="/admin/supplements/add" class="flex items-center gap-3 px-4 py-3 rounded-xl text-gray-300 hover:bg-white/10 transition-all duration-300">
+                <i class="fas fa-pills w-4 text-center"></i><span class="font-medium">Supplements</span>
+            </a>
+            <a href="/admin/membership-plans" class="flex items-center gap-3 px-4 py-3 rounded-xl text-gray-300 hover:bg-white/10 transition-all duration-300">
+                <i class="fas fa-tags w-4 text-center"></i><span class="font-medium">Membership Plans</span>
+            </a>
+            <a href="/admin/payment-history" class="flex items-center gap-3 px-4 py-3 rounded-xl text-gray-300 hover:bg-white/10 transition-all duration-300">
+                <i class="fas fa-history w-4 text-center"></i><span class="font-medium">Payment History</span>
+            </a>
+            <a href="/admin/announcements" class="flex items-center gap-3 px-4 py-3 rounded-xl text-gray-300 hover:bg-white/10 transition-all duration-300">
+                <i class="fas fa-bullhorn w-4 text-center"></i><span class="font-medium">Announcements</span>
+            </a>
+            <a href="/admin/settings" class="flex items-center gap-3 px-4 py-3 rounded-xl text-gray-300 hover:bg-white/10 transition-all duration-300">
+                <i class="fas fa-cog w-4 text-center"></i><span class="font-medium">Settings</span>
+            </a>
+        </nav>
+        <div class="p-4 border-t border-white/10">
+            <div class="flex items-center gap-3 mb-3">
+                <div class="h-10 w-10 rounded-full bg-gradient-to-r from-pink-500 to-purple-500 flex items-center justify-center flex-shrink-0">
+                    <i class="fas fa-user-shield text-sm text-white"></i>
+                </div>
+                <div class="min-w-0">
+                    <h3 class="font-medium truncate" th:text="${admin != null ? admin.name : 'Admin'}">Admin</h3>
+                    <p class="text-xs text-gray-400">Administrator</p>
+                </div>
+            </div>
+            <a href="/logout">
+                <button class="w-full mt-2 bg-white/10 hover:bg-white/20 text-white rounded-xl p-2.5 transition-all duration-300 flex items-center justify-center gap-2">
+                    <i class="fas fa-sign-out-alt"></i><span>Log Out</span>
+                </button>
+            </a>
+        </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="flex-1 overflow-y-auto py-6 px-8">
+        <div class="max-w-6xl mx-auto">
+            <!-- Header -->
+            <div class="flex items-center justify-between mb-8">
+                <div>
+                    <h1 class="text-3xl font-bold bg-gradient-to-r from-blue-400 via-purple-400 to-pink-400 bg-clip-text text-transparent">Instructors</h1>
+                    <p class="text-gray-400 mt-1">Manage gym instructors</p>
+                </div>
+                <button onclick="openAddModal()"
+                        class="flex items-center gap-2 px-4 py-2.5 bg-gradient-to-r from-purple-600 to-blue-600 rounded-xl hover:opacity-90 transition-all">
+                    <i class="fas fa-plus"></i><span>Add Instructor</span>
+                </button>
+            </div>
+
+            <!-- Stats -->
+            <div class="glass-effect p-5 mb-6 flex items-center gap-4">
+                <div class="h-12 w-12 rounded-xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center">
+                    <i class="fas fa-chalkboard-teacher text-white"></i>
+                </div>
+                <div>
+                    <p class="text-sm text-gray-400">Total Instructors</p>
+                    <p class="text-2xl font-semibold" th:text="${instructors != null ? #lists.size(instructors) : 0}">0</p>
+                </div>
+            </div>
+
+            <!-- Instructors Table -->
+            <div class="glass-effect overflow-hidden">
+                <div class="overflow-x-auto">
+                    <table class="w-full">
+                        <thead>
+                        <tr class="bg-white/5">
+                            <th class="text-left py-4 px-6 font-medium text-gray-300">Name</th>
+                            <th class="text-left py-4 px-6 font-medium text-gray-300">Email</th>
+                            <th class="text-left py-4 px-6 font-medium text-gray-300">Branch</th>
+                            <th class="text-center py-4 px-6 font-medium text-gray-300">Actions</th>
+                        </tr>
+                        </thead>
+                        <tbody class="divide-y divide-white/5">
+                        <tr th:each="inst : ${instructors}" class="hover:bg-white/5 transition-colors">
+                            <td class="py-4 px-6">
+                                <div class="flex items-center gap-3">
+                                    <div class="h-9 w-9 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center flex-shrink-0">
+                                        <i class="fas fa-user text-white text-sm"></i>
+                                    </div>
+                                    <span class="font-medium" th:text="${inst.name}">Name</span>
+                                </div>
+                            </td>
+                            <td class="py-4 px-6 text-gray-300" th:text="${inst.email}">Email</td>
+                            <td class="py-4 px-6 text-gray-300" th:text="${inst.branch != null ? inst.branch : '—'}">Branch</td>
+                            <td class="py-4 px-6">
+                                <div class="flex items-center justify-center gap-2">
+                                    <button th:onclick="|openEditModal(${inst.id}, '${inst.name}', '${inst.email}', '${inst.branch != null ? inst.branch : ''}')|"
+                                            class="px-3 py-1.5 text-xs bg-blue-500/20 text-blue-400 rounded-lg hover:bg-blue-500/30 transition-all">
+                                        <i class="fas fa-edit mr-1"></i>Edit
+                                    </button>
+                                    <button th:onclick="'deleteInstructor(' + ${inst.id} + ')'"
+                                            class="px-3 py-1.5 text-xs bg-red-500/20 text-red-400 rounded-lg hover:bg-red-500/30 transition-all">
+                                        <i class="fas fa-trash mr-1"></i>Delete
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                        <tr th:if="${instructors == null or #lists.isEmpty(instructors)}">
+                            <td colspan="4" class="py-16 text-center text-gray-500">
+                                <i class="fas fa-chalkboard-teacher text-4xl mb-4 opacity-30 block"></i>
+                                No instructors found. Add one to get started.
+                            </td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </main>
+</div>
+
+<!-- Add Instructor Modal -->
+<div id="addModal" class="hidden modal-overlay">
+    <div class="glass-effect w-full max-w-md mx-4 p-6">
+        <div class="flex items-center justify-between mb-5">
+            <h2 class="text-xl font-semibold">Add Instructor</h2>
+            <button onclick="document.getElementById('addModal').classList.add('hidden')" class="text-gray-400 hover:text-white">
+                <i class="fas fa-times text-xl"></i>
+            </button>
+        </div>
+        <form id="addForm" class="space-y-4">
+            <div>
+                <label class="block text-sm text-gray-400 mb-1">Name</label>
+                <input type="text" id="addName" required class="w-full bg-white/5 border border-white/10 rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-purple-500" placeholder="Full name">
+            </div>
+            <div>
+                <label class="block text-sm text-gray-400 mb-1">Email</label>
+                <input type="email" id="addEmail" required class="w-full bg-white/5 border border-white/10 rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-purple-500" placeholder="Email address">
+            </div>
+            <div>
+                <label class="block text-sm text-gray-400 mb-1">Password</label>
+                <input type="password" id="addPassword" required class="w-full bg-white/5 border border-white/10 rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-purple-500" placeholder="Password">
+            </div>
+            <div>
+                <label class="block text-sm text-gray-400 mb-1">Branch</label>
+                <input type="text" id="addBranch" class="w-full bg-white/5 border border-white/10 rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-purple-500" placeholder="Branch (optional)">
+            </div>
+            <div id="addError" class="hidden text-red-400 text-sm"></div>
+            <div class="flex gap-3 justify-end pt-2">
+                <button type="button" onclick="document.getElementById('addModal').classList.add('hidden')" class="px-5 py-2.5 bg-white/10 hover:bg-white/20 rounded-xl transition-all">Cancel</button>
+                <button type="submit" class="px-5 py-2.5 bg-gradient-to-r from-purple-600 to-blue-600 rounded-xl hover:opacity-90 transition-all">Add Instructor</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Edit Instructor Modal -->
+<div id="editModal" class="hidden modal-overlay">
+    <div class="glass-effect w-full max-w-md mx-4 p-6">
+        <div class="flex items-center justify-between mb-5">
+            <h2 class="text-xl font-semibold">Edit Instructor</h2>
+            <button onclick="document.getElementById('editModal').classList.add('hidden')" class="text-gray-400 hover:text-white">
+                <i class="fas fa-times text-xl"></i>
+            </button>
+        </div>
+        <form id="editForm" class="space-y-4">
+            <input type="hidden" id="editId">
+            <div>
+                <label class="block text-sm text-gray-400 mb-1">Name</label>
+                <input type="text" id="editName" required class="w-full bg-white/5 border border-white/10 rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-purple-500">
+            </div>
+            <div>
+                <label class="block text-sm text-gray-400 mb-1">Email</label>
+                <input type="email" id="editEmail" required class="w-full bg-white/5 border border-white/10 rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-purple-500">
+            </div>
+            <div>
+                <label class="block text-sm text-gray-400 mb-1">New Password <span class="text-gray-500">(leave blank to keep current)</span></label>
+                <input type="password" id="editPassword" class="w-full bg-white/5 border border-white/10 rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-purple-500" placeholder="New password">
+            </div>
+            <div>
+                <label class="block text-sm text-gray-400 mb-1">Branch</label>
+                <input type="text" id="editBranch" class="w-full bg-white/5 border border-white/10 rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-purple-500">
+            </div>
+            <div id="editError" class="hidden text-red-400 text-sm"></div>
+            <div class="flex gap-3 justify-end pt-2">
+                <button type="button" onclick="document.getElementById('editModal').classList.add('hidden')" class="px-5 py-2.5 bg-white/10 hover:bg-white/20 rounded-xl transition-all">Cancel</button>
+                <button type="submit" class="px-5 py-2.5 bg-gradient-to-r from-purple-600 to-blue-600 rounded-xl hover:opacity-90 transition-all">Save Changes</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+    function openAddModal() {
+        document.getElementById('addForm').reset();
+        document.getElementById('addError').classList.add('hidden');
+        document.getElementById('addModal').classList.remove('hidden');
+    }
+
+    function openEditModal(id, name, email, branch) {
+        document.getElementById('editId').value = id;
+        document.getElementById('editName').value = name;
+        document.getElementById('editEmail').value = email;
+        document.getElementById('editBranch').value = branch;
+        document.getElementById('editPassword').value = '';
+        document.getElementById('editError').classList.add('hidden');
+        document.getElementById('editModal').classList.remove('hidden');
+    }
+
+    document.getElementById('addForm').addEventListener('submit', async function(e) {
+        e.preventDefault();
+        const errEl = document.getElementById('addError');
+        errEl.classList.add('hidden');
+        const body = new URLSearchParams({
+            name: document.getElementById('addName').value.trim(),
+            email: document.getElementById('addEmail').value.trim(),
+            password: document.getElementById('addPassword').value,
+            branch: document.getElementById('addBranch').value.trim()
+        });
+        try {
+            const res = await fetch('/admin/api/add-instructor', {method: 'POST', headers: {'Content-Type': 'application/x-www-form-urlencoded'}, body});
+            const data = await res.json();
+            if (data.success) location.reload();
+            else { errEl.textContent = data.message || 'Failed to add instructor.'; errEl.classList.remove('hidden'); }
+        } catch { errEl.textContent = 'Network error.'; errEl.classList.remove('hidden'); }
+    });
+
+    document.getElementById('editForm').addEventListener('submit', async function(e) {
+        e.preventDefault();
+        const id = document.getElementById('editId').value;
+        const errEl = document.getElementById('editError');
+        errEl.classList.add('hidden');
+        const body = new URLSearchParams({
+            name: document.getElementById('editName').value.trim(),
+            email: document.getElementById('editEmail').value.trim(),
+            password: document.getElementById('editPassword').value,
+            branch: document.getElementById('editBranch').value.trim()
+        });
+        try {
+            const res = await fetch('/admin/api/update-instructor/' + id, {method: 'POST', headers: {'Content-Type': 'application/x-www-form-urlencoded'}, body});
+            const data = await res.json();
+            if (data.success) location.reload();
+            else { errEl.textContent = data.message || 'Failed to update instructor.'; errEl.classList.remove('hidden'); }
+        } catch { errEl.textContent = 'Network error.'; errEl.classList.remove('hidden'); }
+    });
+
+    async function deleteInstructor(id) {
+        if (!confirm('Delete this instructor? This cannot be undone.')) return;
+        const res = await fetch('/admin/api/delete-instructor/' + id, {method: 'POST'});
+        const data = await res.json();
+        if (data.success) location.reload();
+        else alert('Error: ' + data.message);
+    }
+</script>
+</body>
+</html>
