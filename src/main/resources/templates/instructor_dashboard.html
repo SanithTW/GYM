@@ -1,0 +1,381 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FitConnect - Instructor Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: linear-gradient(to bottom right, #1a1c2e, #14162a);
+            color: #fff;
+        }
+
+        .glass-effect {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .scale-hover:hover {
+            transform: scale(1.02);
+            transition: transform 0.3s ease;
+        }
+
+        .sidebar-link.active {
+            background: linear-gradient(to right, #7c3aed, #2563eb);
+        }
+
+        .sidebar-link:not(.active):hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .action-card:hover {
+            transform: translateY(-4px);
+            transition: transform 0.3s ease;
+        }
+    </style>
+</head>
+<body>
+<div class="flex h-screen overflow-hidden">
+
+    <!-- Sidebar -->
+    <aside class="hidden lg:flex flex-col w-64 h-screen glass-effect flex-shrink-0">
+        <div class="p-6">
+            <a href="#" class="flex items-center gap-3">
+                <div class="bg-gradient-to-r from-purple-500 to-blue-500 p-2.5 rounded-lg">
+                    <i class="fas fa-dumbbell text-white"></i>
+                </div>
+                <h1 class="text-2xl font-bold bg-gradient-to-r from-blue-400 via-purple-400 to-pink-400 bg-clip-text text-transparent">FitConnect</h1>
+            </a>
+        </div>
+
+        <div class="px-4 mb-4">
+            <span class="text-xs font-semibold uppercase tracking-widest text-gray-500">Instructor Panel</span>
+        </div>
+
+        <nav class="flex-1 px-4 space-y-2 overflow-y-auto">
+            <a href="/instructor/dashboard" class="sidebar-link active flex items-center gap-3 px-4 py-3 rounded-xl text-white transition-all duration-300">
+                <i class="fas fa-th-large w-4 text-center"></i>
+                <span class="font-medium">Dashboard</span>
+            </a>
+            <a href="/instructor/create-diet-plan" class="sidebar-link flex items-center gap-3 px-4 py-3 rounded-xl text-gray-300 transition-all duration-300">
+                <i class="fas fa-apple-alt w-4 text-center"></i>
+                <span class="font-medium">Create Diet Plan</span>
+            </a>
+            <a href="/instructor/create-workout" class="sidebar-link flex items-center gap-3 px-4 py-3 rounded-xl text-gray-300 transition-all duration-300">
+                <i class="fas fa-running w-4 text-center"></i>
+                <span class="font-medium">Create Workout</span>
+            </a>
+            <a href="/instructor/members" class="sidebar-link flex items-center gap-3 px-4 py-3 rounded-xl text-gray-300 transition-all duration-300">
+                <i class="fas fa-users w-4 text-center"></i>
+                <span class="font-medium">My Members</span>
+            </a>
+            <a href="/instructor/diet-plans" class="sidebar-link flex items-center gap-3 px-4 py-3 rounded-xl text-gray-300 transition-all duration-300">
+                <i class="fas fa-clipboard-list w-4 text-center"></i>
+                <span class="font-medium">My Diet Plans</span>
+            </a>
+            <a href="/instructor/workouts" class="sidebar-link flex items-center gap-3 px-4 py-3 rounded-xl text-gray-300 transition-all duration-300">
+                <i class="fas fa-list-alt w-4 text-center"></i>
+                <span class="font-medium">My Workouts</span>
+            </a>
+            <a href="/instructor/profile" class="sidebar-link flex items-center gap-3 px-4 py-3 rounded-xl text-gray-300 transition-all duration-300">
+                <i class="fas fa-user w-4 text-center"></i>
+                <span class="font-medium">Profile</span>
+            </a>
+            <a href="/instructor/settings" class="sidebar-link flex items-center gap-3 px-4 py-3 rounded-xl text-gray-300 transition-all duration-300">
+                <i class="fas fa-cog w-4 text-center"></i>
+                <span class="font-medium">Settings</span>
+            </a>
+        </nav>
+
+        <div class="p-4 border-t border-white/10">
+            <div class="flex items-center gap-3 mb-3">
+                <div class="h-10 w-10 rounded-full bg-gradient-to-r from-pink-500 to-purple-500 flex items-center justify-center flex-shrink-0">
+                    <i class="fas fa-chalkboard-teacher text-sm text-white"></i>
+                </div>
+                <div class="min-w-0">
+                    <h3 class="font-medium truncate" th:text="${instructor.name}">Instructor</h3>
+                    <p class="text-xs text-gray-400 truncate">Fitness Instructor</p>
+                </div>
+            </div>
+            <a href="/logout">
+                <button class="w-full mt-2 bg-white/10 hover:bg-white/20 text-white rounded-xl p-2.5 flex items-center justify-center gap-2 transition-all duration-300">
+                    <i class="fas fa-sign-out-alt"></i>
+                    <span>Log Out</span>
+                </button>
+            </a>
+        </div>
+    </aside>
+
+    <!-- Mobile Top Bar -->
+    <div class="lg:hidden fixed top-0 left-0 right-0 z-50 glass-effect px-4 py-3 flex items-center justify-between">
+        <div class="flex items-center gap-2">
+            <div class="bg-gradient-to-r from-purple-500 to-blue-500 p-2 rounded-lg">
+                <i class="fas fa-dumbbell text-white text-sm"></i>
+            </div>
+            <span class="font-bold text-lg bg-gradient-to-r from-blue-400 via-purple-400 to-pink-400 bg-clip-text text-transparent">FitConnect</span>
+        </div>
+        <button onclick="toggleMobileMenu()" class="text-gray-300 hover:text-white p-2">
+            <i class="fas fa-bars text-xl"></i>
+        </button>
+    </div>
+
+    <!-- Mobile Sidebar Drawer -->
+    <div id="mobileMenu" class="lg:hidden fixed inset-0 z-40 hidden">
+        <div class="absolute inset-0 bg-black/60" onclick="toggleMobileMenu()"></div>
+        <aside class="relative w-64 h-full glass-effect flex flex-col" style="background: rgba(20, 22, 42, 0.98);">
+            <div class="p-6 pt-16">
+                <span class="text-xs font-semibold uppercase tracking-widest text-gray-500">Instructor Panel</span>
+            </div>
+            <nav class="flex-1 px-4 space-y-2">
+                <a href="/instructor/dashboard" class="sidebar-link active flex items-center gap-3 px-4 py-3 rounded-xl text-white transition-all duration-300">
+                    <i class="fas fa-th-large w-4 text-center"></i>
+                    <span class="font-medium">Dashboard</span>
+                </a>
+                <a href="/instructor/create-diet-plan" class="sidebar-link flex items-center gap-3 px-4 py-3 rounded-xl text-gray-300 transition-all duration-300">
+                    <i class="fas fa-apple-alt w-4 text-center"></i>
+                    <span class="font-medium">Create Diet Plan</span>
+                </a>
+                <a href="/instructor/create-workout" class="sidebar-link flex items-center gap-3 px-4 py-3 rounded-xl text-gray-300 transition-all duration-300">
+                    <i class="fas fa-running w-4 text-center"></i>
+                    <span class="font-medium">Create Workout</span>
+                </a>
+                <a href="/instructor/members" class="sidebar-link flex items-center gap-3 px-4 py-3 rounded-xl text-gray-300 transition-all duration-300">
+                    <i class="fas fa-users w-4 text-center"></i>
+                    <span class="font-medium">My Members</span>
+                </a>
+                <a href="/instructor/diet-plans" class="sidebar-link flex items-center gap-3 px-4 py-3 rounded-xl text-gray-300 transition-all duration-300">
+                    <i class="fas fa-clipboard-list w-4 text-center"></i>
+                    <span class="font-medium">My Diet Plans</span>
+                </a>
+                <a href="/instructor/workouts" class="sidebar-link flex items-center gap-3 px-4 py-3 rounded-xl text-gray-300 transition-all duration-300">
+                    <i class="fas fa-list-alt w-4 text-center"></i>
+                    <span class="font-medium">My Workouts</span>
+                </a>
+                <a href="/instructor/profile" class="sidebar-link flex items-center gap-3 px-4 py-3 rounded-xl text-gray-300 transition-all duration-300">
+                    <i class="fas fa-user w-4 text-center"></i>
+                    <span class="font-medium">Profile</span>
+                </a>
+                <a href="/instructor/settings" class="sidebar-link flex items-center gap-3 px-4 py-3 rounded-xl text-gray-300 transition-all duration-300">
+                    <i class="fas fa-cog w-4 text-center"></i>
+                    <span class="font-medium">Settings</span>
+                </a>
+            </nav>
+            <div class="p-4 border-t border-white/10">
+                <a href="/logout">
+                    <button class="w-full bg-white/10 hover:bg-white/20 text-white rounded-xl p-2.5 flex items-center justify-center gap-2">
+                        <i class="fas fa-sign-out-alt"></i>
+                        <span>Log Out</span>
+                    </button>
+                </a>
+            </div>
+        </aside>
+    </div>
+
+    <!-- Main Content -->
+    <main class="flex-1 overflow-y-auto p-6 pt-6 lg:pt-6 mt-14 lg:mt-0">
+        <div class="max-w-7xl mx-auto">
+
+            <!-- Header -->
+            <header class="mb-8">
+                <h1 class="text-3xl font-bold bg-gradient-to-r from-blue-400 via-purple-400 to-pink-400 bg-clip-text text-transparent">
+                    Welcome back, <span th:text="${instructor.name}">Instructor</span>!
+                </h1>
+                <p class="text-gray-400 mt-2">Manage your members' fitness journeys</p>
+            </header>
+
+            <!-- Stats Overview -->
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+                <div class="glass-effect rounded-xl p-5 scale-hover">
+                    <div class="flex justify-between items-start">
+                        <div>
+                            <h3 class="text-sm font-medium text-gray-300">Total Members</h3>
+                            <p class="text-3xl font-semibold mt-2 bg-gradient-to-r from-blue-400 to-blue-600 bg-clip-text text-transparent" th:text="${totalMembers}">24</p>
+                        </div>
+                        <div class="p-3 rounded-xl bg-gradient-to-br from-blue-500 to-blue-700">
+                            <i class="fas fa-users text-white"></i>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="glass-effect rounded-xl p-5 scale-hover">
+                    <div class="flex justify-between items-start">
+                        <div>
+                            <h3 class="text-sm font-medium text-gray-300">Diet Plans Created</h3>
+                            <p class="text-3xl font-semibold mt-2 bg-gradient-to-r from-green-400 to-green-600 bg-clip-text text-transparent" th:text="${totalDietPlans}">12</p>
+                        </div>
+                        <div class="p-3 rounded-xl bg-gradient-to-br from-green-500 to-green-700">
+                            <i class="fas fa-apple-alt text-white"></i>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="glass-effect rounded-xl p-5 scale-hover">
+                    <div class="flex justify-between items-start">
+                        <div>
+                            <h3 class="text-sm font-medium text-gray-300">Workout Programs</h3>
+                            <p class="text-3xl font-semibold mt-2 bg-gradient-to-r from-purple-400 to-purple-600 bg-clip-text text-transparent" th:text="${totalWorkouts}">8</p>
+                        </div>
+                        <div class="p-3 rounded-xl bg-gradient-to-br from-purple-500 to-purple-700">
+                            <i class="fas fa-dumbbell text-white"></i>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="glass-effect rounded-xl p-5 scale-hover">
+                    <div class="flex justify-between items-start">
+                        <div>
+                            <h3 class="text-sm font-medium text-gray-300">Sessions Today</h3>
+                            <p class="text-3xl font-semibold mt-2 bg-gradient-to-r from-pink-400 to-pink-600 bg-clip-text text-transparent" th:text="${sessionsToday}">5</p>
+                        </div>
+                        <div class="p-3 rounded-xl bg-gradient-to-br from-pink-500 to-pink-700">
+                            <i class="fas fa-calendar-check text-white"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Quick Actions -->
+            <div class="mb-8">
+                <h2 class="text-xl font-semibold mb-4">Quick Actions</h2>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+
+                    <!-- Create Diet Plan Card -->
+                    <a href="/instructor/create-diet-plan" class="action-card glass-effect rounded-xl p-6 flex items-center gap-5 transition-all duration-300 cursor-pointer group">
+                        <div class="h-16 w-16 rounded-xl bg-gradient-to-br from-green-500 to-emerald-700 flex items-center justify-center flex-shrink-0 group-hover:scale-110 transition-transform duration-300">
+                            <i class="fas fa-apple-alt text-2xl text-white"></i>
+                        </div>
+                        <div>
+                            <h3 class="text-lg font-semibold">Create Diet Plan</h3>
+                            <p class="text-sm text-gray-400 mt-1">Design personalised nutrition plans for your members</p>
+                        </div>
+                        <i class="fas fa-chevron-right ml-auto text-gray-500 group-hover:text-white transition-colors duration-300"></i>
+                    </a>
+
+                    <!-- Create Workout Card -->
+                    <a href="/instructor/create-workout" class="action-card glass-effect rounded-xl p-6 flex items-center gap-5 transition-all duration-300 cursor-pointer group">
+                        <div class="h-16 w-16 rounded-xl bg-gradient-to-br from-purple-500 to-indigo-700 flex items-center justify-center flex-shrink-0 group-hover:scale-110 transition-transform duration-300">
+                            <i class="fas fa-running text-2xl text-white"></i>
+                        </div>
+                        <div>
+                            <h3 class="text-lg font-semibold">Create Workout Program</h3>
+                            <p class="text-sm text-gray-400 mt-1">Build structured workout routines for your members</p>
+                        </div>
+                        <i class="fas fa-chevron-right ml-auto text-gray-500 group-hover:text-white transition-colors duration-300"></i>
+                    </a>
+                </div>
+            </div>
+
+            <!-- Recent Activity -->
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+
+                <!-- Recent Diet Plans -->
+                <div class="glass-effect rounded-xl p-6">
+                    <div class="flex items-center justify-between mb-4">
+                        <h2 class="text-xl font-semibold">Recent Diet Plans</h2>
+                        <a href="/instructor/create-diet-plan" class="text-sm text-purple-400 hover:text-purple-300 transition-colors duration-200">+ New Plan</a>
+                    </div>
+                    <div class="space-y-3">
+                        <div class="bg-white/5 rounded-xl p-4 flex items-center justify-between">
+                            <div class="flex items-center gap-3">
+                                <div class="h-10 w-10 rounded-xl bg-gradient-to-br from-green-500 to-emerald-600 flex items-center justify-center flex-shrink-0">
+                                    <i class="fas fa-leaf text-white text-sm"></i>
+                                </div>
+                                <div>
+                                    <h4 class="font-medium text-sm">Weight Loss Plan</h4>
+                                    <p class="text-xs text-gray-400">Assigned to 4 members</p>
+                                </div>
+                            </div>
+                            <span class="text-xs px-2 py-1 rounded-full bg-green-500/20 text-green-400">Active</span>
+                        </div>
+                        <div class="bg-white/5 rounded-xl p-4 flex items-center justify-between">
+                            <div class="flex items-center gap-3">
+                                <div class="h-10 w-10 rounded-xl bg-gradient-to-br from-blue-500 to-cyan-600 flex items-center justify-center flex-shrink-0">
+                                    <i class="fas fa-drumstick-bite text-white text-sm"></i>
+                                </div>
+                                <div>
+                                    <h4 class="font-medium text-sm">Muscle Gain Diet</h4>
+                                    <p class="text-xs text-gray-400">Assigned to 6 members</p>
+                                </div>
+                            </div>
+                            <span class="text-xs px-2 py-1 rounded-full bg-green-500/20 text-green-400">Active</span>
+                        </div>
+                        <div class="bg-white/5 rounded-xl p-4 flex items-center justify-between">
+                            <div class="flex items-center gap-3">
+                                <div class="h-10 w-10 rounded-xl bg-gradient-to-br from-orange-500 to-red-600 flex items-center justify-center flex-shrink-0">
+                                    <i class="fas fa-fire text-white text-sm"></i>
+                                </div>
+                                <div>
+                                    <h4 class="font-medium text-sm">High Protein Plan</h4>
+                                    <p class="text-xs text-gray-400">Assigned to 3 members</p>
+                                </div>
+                            </div>
+                            <span class="text-xs px-2 py-1 rounded-full bg-yellow-500/20 text-yellow-400">Draft</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Recent Workout Programs -->
+                <div class="glass-effect rounded-xl p-6">
+                    <div class="flex items-center justify-between mb-4">
+                        <h2 class="text-xl font-semibold">Recent Workout Programs</h2>
+                        <a href="/instructor/create-workout" class="text-sm text-purple-400 hover:text-purple-300 transition-colors duration-200">+ New Program</a>
+                    </div>
+                    <div class="space-y-3">
+                        <div class="bg-white/5 rounded-xl p-4 flex items-center justify-between">
+                            <div class="flex items-center gap-3">
+                                <div class="h-10 w-10 rounded-xl bg-gradient-to-br from-purple-500 to-indigo-600 flex items-center justify-center flex-shrink-0">
+                                    <i class="fas fa-dumbbell text-white text-sm"></i>
+                                </div>
+                                <div>
+                                    <h4 class="font-medium text-sm">Beginner Strength</h4>
+                                    <p class="text-xs text-gray-400">8 weeks • 5 members</p>
+                                </div>
+                            </div>
+                            <span class="text-xs px-2 py-1 rounded-full bg-green-500/20 text-green-400">Active</span>
+                        </div>
+                        <div class="bg-white/5 rounded-xl p-4 flex items-center justify-between">
+                            <div class="flex items-center gap-3">
+                                <div class="h-10 w-10 rounded-xl bg-gradient-to-br from-pink-500 to-rose-600 flex items-center justify-center flex-shrink-0">
+                                    <i class="fas fa-heartbeat text-white text-sm"></i>
+                                </div>
+                                <div>
+                                    <h4 class="font-medium text-sm">HIIT Cardio Blast</h4>
+                                    <p class="text-xs text-gray-400">4 weeks • 7 members</p>
+                                </div>
+                            </div>
+                            <span class="text-xs px-2 py-1 rounded-full bg-green-500/20 text-green-400">Active</span>
+                        </div>
+                        <div class="bg-white/5 rounded-xl p-4 flex items-center justify-between">
+                            <div class="flex items-center gap-3">
+                                <div class="h-10 w-10 rounded-xl bg-gradient-to-br from-cyan-500 to-blue-600 flex items-center justify-center flex-shrink-0">
+                                    <i class="fas fa-water text-white text-sm"></i>
+                                </div>
+                                <div>
+                                    <h4 class="font-medium text-sm">Flexibility & Core</h4>
+                                    <p class="text-xs text-gray-400">6 weeks • 4 members</p>
+                                </div>
+                            </div>
+                            <span class="text-xs px-2 py-1 rounded-full bg-yellow-500/20 text-yellow-400">Draft</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </main>
+</div>
+
+<script>
+    function toggleMobileMenu() {
+        const menu = document.getElementById('mobileMenu');
+        menu.classList.toggle('hidden');
+    }
+</script>
+</body>
+</html>

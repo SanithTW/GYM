@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FitConnect - Create Diet Plan</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: linear-gradient(to bottom right, #1a1c2e, #14162a);
+            color: #fff;
+        }
+
+        .glass-effect {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .sidebar-link.active {
+            background: linear-gradient(to right, #7c3aed, #2563eb);
+        }
+
+        .sidebar-link:not(.active):hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .form-input {
+            background: rgba(255, 255, 255, 0.07);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            color: #fff;
+            transition: border-color 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: #7c3aed;
+            box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.2);
+        }
+
+        .form-input::placeholder {
+            color: rgba(255, 255, 255, 0.3);
+        }
+
+        .form-input option {
+            background: #1a1c2e;
+            color: #fff;
+        }
+
+        .meal-row {
+            animation: fadeInRow 0.3s ease;
+        }
+
+        @keyframes fadeInRow {
+            from { opacity: 0; transform: translateY(-8px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+
+        .remove-btn:hover {
+            color: #f87171;
+        }
+    </style>
+</head>
+<body>
+<div class="flex h-screen overflow-hidden">
+
+    <!-- Sidebar -->
+    <aside class="hidden lg:flex flex-col w-64 h-screen glass-effect flex-shrink-0">
+        <div class="p-6">
+            <a href="#" class="flex items-center gap-3">
+                <div class="bg-gradient-to-r from-purple-500 to-blue-500 p-2.5 rounded-lg">
+                    <i class="fas fa-dumbbell text-white"></i>
+                </div>
+                <h1 class="text-2xl font-bold bg-gradient-to-r from-blue-400 via-purple-400 to-pink-400 bg-clip-text text-transparent">FitConnect</h1>
+            </a>
+        </div>
+
+        <div class="px-4 mb-4">
+            <span class="text-xs font-semibold uppercase tracking-widest text-gray-500">Instructor Panel</span>
+        </div>
+
+        <nav class="flex-1 px-4 space-y-2 overflow-y-auto">
+            <a href="/instructor/dashboard" class="sidebar-link flex items-center gap-3 px-4 py-3 rounded-xl text-gray-300 transition-all duration-300">
+                <i class="fas fa-th-large w-4 text-center"></i>
+                <span class="font-medium">Dashboard</span>
+            </a>
+            <a href="/instructor/create-diet-plan" class="sidebar-link active flex items-center gap-3 px-4 py-3 rounded-xl text-white transition-all duration-300">
+                <i class="fas fa-apple-alt w-4 text-center"></i>
+                <span class="font-medium">Create Diet Plan</span>
+            </a>
+            <a href="/instructor/create-workout" class="sidebar-link flex items-center gap-3 px-4 py-3 rounded-xl text-gray-300 transition-all duration-300">
+                <i class="fas fa-running w-4 text-center"></i>
+                <span class="font-medium">Create Workout</span>
+            </a>
+            <a href="/instructor/members" class="sidebar-link flex items-center gap-3 px-4 py-3 rounded-xl text-gray-300 transition-all duration-300">
+                <i class="fas fa-users w-4 text-center"></i>
+                <span class="font-medium">My Members</span>
+            </a>
+            <a href="/instructor/diet-plans" class="sidebar-link flex items-center gap-3 px-4 py-3 rounded-xl text-gray-300 transition-all duration-300">
+                <i class="fas fa-clipboard-list w-4 text-center"></i>
+                <span class="font-medium">My Diet Plans</span>
+            </a>
+            <a href="/instructor/workouts" class="sidebar-link flex items-center gap-3 px-4 py-3 rounded-xl text-gray-300 transition-all duration-300">
+                <i class="fas fa-list-alt w-4 text-center"></i>
+                <span class="font-medium">My Workouts</span>
+            </a>
+            <a href="/instructor/profile" class="sidebar-link flex items-center gap-3 px-4 py-3 rounded-xl text-gray-300 transition-all duration-300">
+                <i class="fas fa-user w-4 text-center"></i>
+                <span class="font-medium">Profile</span>
+            </a>
+            <a href="/instructor/settings" class="sidebar-link flex items-center gap-3 px-4 py-3 rounded-xl text-gray-300 transition-all duration-300">
+                <i class="fas fa-cog w-4 text-center"></i>
+                <span class="font-medium">Settings</span>
+            </a>
+        </nav>
+
+        <div class="p-4 border-t border-white/10">
+            <div class="flex items-center gap-3 mb-3">
+                <div class="h-10 w-10 rounded-full bg-gradient-to-r from-pink-500 to-purple-500 flex items-center justify-center flex-shrink-0">
+                    <i class="fas fa-chalkboard-teacher text-sm text-white"></i>
+                </div>
+                <div class="min-w-0">
+                    <h3 class="font-medium truncate" th:text="${instructor.name}">Instructor</h3>
+                    <p class="text-xs text-gray-400 truncate">Fitness Instructor</p>
+                </div>
+            </div>
+            <a href="/logout">
+                <button class="w-full mt-2 bg-white/10 hover:bg-white/20 text-white rounded-xl p-2.5 flex items-center justify-center gap-2 transition-all duration-300">
+                    <i class="fas fa-sign-out-alt"></i>
+                    <span>Log Out</span>
+                </button>
+            </a>
+        </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="flex-1 overflow-y-auto p-6">
+        <div class="max-w-4xl mx-auto">
+
+            <!-- Header -->
+            <header class="mb-8">
+                <div class="flex items-center gap-3 mb-1">
+                    <a href="/instructor/dashboard" class="text-gray-400 hover:text-white transition-colors duration-200">
+                        <i class="fas fa-arrow-left"></i>
+                    </a>
+                    <h1 class="text-3xl font-bold bg-gradient-to-r from-blue-400 via-purple-400 to-pink-400 bg-clip-text text-transparent">Create Diet Plan</h1>
+                </div>
+                <p class="text-gray-400 mt-1 ml-7">Design a personalised nutrition plan for your member</p>
+            </header>
+
+            <form th:action="@{/instructor/create-diet-plan}" method="post" th:object="${dietPlan}">
+
+                <!-- Plan Details -->
+                <div class="glass-effect rounded-xl p-6 mb-6">
+                    <h2 class="text-lg font-semibold mb-5 flex items-center gap-2">
+                        <span class="h-7 w-7 rounded-lg bg-gradient-to-br from-green-500 to-emerald-700 flex items-center justify-center text-xs">
+                            <i class="fas fa-info"></i>
+                        </span>
+                        Plan Details
+                    </h2>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                        <div class="md:col-span-2">
+                            <label class="block text-sm font-medium text-gray-300 mb-2">Plan Name</label>
+                            <input type="text" th:field="*{planName}" placeholder="e.g. Weight Loss Plan - John"
+                                   class="form-input w-full rounded-xl px-4 py-3 text-sm" required>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-300 mb-2">Assign to Member</label>
+                            <select th:field="*{memberId}" class="form-input w-full rounded-xl px-4 py-3 text-sm">
+                                <option value="">-- Select Member --</option>
+                                <option th:each="member : ${members}" th:value="${member.id}" th:text="${member.name}">Member Name</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-300 mb-2">Goal</label>
+                            <select th:field="*{goal}" class="form-input w-full rounded-xl px-4 py-3 text-sm">
+                                <option value="">-- Select Goal --</option>
+                                <option value="weight_loss">Weight Loss</option>
+                                <option value="muscle_gain">Muscle Gain</option>
+                                <option value="maintenance">Maintenance</option>
+                                <option value="endurance">Endurance</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-300 mb-2">Daily Calorie Target</label>
+                            <input type="number" th:field="*{dailyCalories}" placeholder="e.g. 2000"
+                                   class="form-input w-full rounded-xl px-4 py-3 text-sm">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-300 mb-2">Duration (weeks)</label>
+                            <input type="number" th:field="*{durationWeeks}" placeholder="e.g. 8"
+                                   class="form-input w-full rounded-xl px-4 py-3 text-sm">
+                        </div>
+                        <div class="md:col-span-2">
+                            <label class="block text-sm font-medium text-gray-300 mb-2">Notes / Description</label>
+                            <textarea th:field="*{notes}" rows="3" placeholder="Additional instructions or notes for this diet plan..."
+                                      class="form-input w-full rounded-xl px-4 py-3 text-sm resize-none"></textarea>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Macronutrient Targets -->
+                <div class="glass-effect rounded-xl p-6 mb-6">
+                    <h2 class="text-lg font-semibold mb-5 flex items-center gap-2">
+                        <span class="h-7 w-7 rounded-lg bg-gradient-to-br from-blue-500 to-cyan-600 flex items-center justify-center text-xs">
+                            <i class="fas fa-chart-pie"></i>
+                        </span>
+                        Macronutrient Targets
+                    </h2>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-5">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-300 mb-2">
+                                <span class="inline-block h-2 w-2 rounded-full bg-blue-400 mr-1"></span>
+                                Protein (g/day)
+                            </label>
+                            <input type="number" th:field="*{proteinGrams}" placeholder="e.g. 150"
+                                   class="form-input w-full rounded-xl px-4 py-3 text-sm">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-300 mb-2">
+                                <span class="inline-block h-2 w-2 rounded-full bg-yellow-400 mr-1"></span>
+                                Carbohydrates (g/day)
+                            </label>
+                            <input type="number" th:field="*{carbsGrams}" placeholder="e.g. 250"
+                                   class="form-input w-full rounded-xl px-4 py-3 text-sm">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-300 mb-2">
+                                <span class="inline-block h-2 w-2 rounded-full bg-pink-400 mr-1"></span>
+                                Fats (g/day)
+                            </label>
+                            <input type="number" th:field="*{fatGrams}" placeholder="e.g. 65"
+                                   class="form-input w-full rounded-xl px-4 py-3 text-sm">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Meal Plan -->
+                <div class="glass-effect rounded-xl p-6 mb-6">
+                    <h2 class="text-lg font-semibold mb-5 flex items-center gap-2">
+                        <span class="h-7 w-7 rounded-lg bg-gradient-to-br from-orange-500 to-red-600 flex items-center justify-center text-xs">
+                            <i class="fas fa-utensils"></i>
+                        </span>
+                        Daily Meal Schedule
+                    </h2>
+
+                    <div id="mealContainer" class="space-y-3 mb-4">
+                        <!-- Meal rows injected here by JS -->
+                    </div>
+
+                    <button type="button" onclick="addMeal()"
+                            class="flex items-center gap-2 text-sm text-purple-400 hover:text-purple-300 px-4 py-2 rounded-xl border border-purple-500/30 hover:border-purple-400/50 transition-all duration-200">
+                        <i class="fas fa-plus"></i>
+                        Add Meal
+                    </button>
+                </div>
+
+                <!-- Submit -->
+                <div class="flex items-center justify-end gap-4">
+                    <a href="/instructor/dashboard"
+                       class="px-6 py-3 rounded-xl text-gray-300 hover:text-white border border-white/10 hover:border-white/30 transition-all duration-200 text-sm font-medium">
+                        Cancel
+                    </a>
+                    <button type="submit"
+                            class="px-8 py-3 rounded-xl bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-400 hover:to-emerald-500 text-white font-semibold text-sm transition-all duration-200 flex items-center gap-2">
+                        <i class="fas fa-save"></i>
+                        Save Diet Plan
+                    </button>
+                </div>
+
+            </form>
+        </div>
+    </main>
+</div>
+
+<script>
+    const mealTypes = ['Breakfast', 'Morning Snack', 'Lunch', 'Afternoon Snack', 'Dinner', 'Evening Snack'];
+    let mealCount = 0;
+
+    function addMeal(type = '', food = '', calories = '') {
+        const container = document.getElementById('mealContainer');
+        const idx = mealCount++;
+        const row = document.createElement('div');
+        row.className = 'meal-row bg-white/5 rounded-xl p-4 grid grid-cols-1 md:grid-cols-4 gap-3 items-end';
+        row.innerHTML = `
+            <div>
+                <label class="block text-xs font-medium text-gray-400 mb-1">Meal Type</label>
+                <select name="meals[${idx}].mealType" class="form-input w-full rounded-xl px-3 py-2 text-sm">
+                    ${mealTypes.map(t => `<option value="${t}" ${t === type ? 'selected' : ''}>${t}</option>`).join('')}
+                </select>
+            </div>
+            <div class="md:col-span-2">
+                <label class="block text-xs font-medium text-gray-400 mb-1">Food Items</label>
+                <input type="text" name="meals[${idx}].foodItems" value="${food}"
+                       placeholder="e.g. Oats, banana, milk"
+                       class="form-input w-full rounded-xl px-3 py-2 text-sm">
+            </div>
+            <div class="flex gap-2 items-end">
+                <div class="flex-1">
+                    <label class="block text-xs font-medium text-gray-400 mb-1">Calories</label>
+                    <input type="number" name="meals[${idx}].calories" value="${calories}"
+                           placeholder="kcal"
+                           class="form-input w-full rounded-xl px-3 py-2 text-sm">
+                </div>
+                <button type="button" onclick="this.closest('.meal-row').remove()"
+                        class="remove-btn h-10 w-10 flex-shrink-0 flex items-center justify-center rounded-xl bg-white/5 hover:bg-red-500/20 text-gray-400 transition-all duration-200">
+                    <i class="fas fa-trash-alt text-sm"></i>
+                </button>
+            </div>
+        `;
+        container.appendChild(row);
+    }
+
+    // Pre-populate with 3 default meals
+    addMeal('Breakfast');
+    addMeal('Lunch');
+    addMeal('Dinner');
+</script>
+</body>
+</html>
