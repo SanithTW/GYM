@@ -131,14 +131,19 @@
                                 </div>
                             </td>
                             <td class="py-4 px-6 text-gray-300" th:text="${inst.email}">Email</td>
-                            <td class="py-4 px-6 text-gray-300" th:text="${inst.branch != null ? inst.branch : '—'}">Branch</td>
+                            <td class="py-4 px-6 text-gray-300" th:text="${inst.branch != null ? inst.branch : '-'}">Branch</td>
                             <td class="py-4 px-6">
                                 <div class="flex items-center justify-center gap-2">
-                                    <button th:onclick="|openEditModal(${inst.id}, '${inst.name}', '${inst.email}', '${inst.branch != null ? inst.branch : ''}')|"
+                                    <button th:data-id="${inst.id}"
+                                            th:data-name="${inst.name}"
+                                            th:data-email="${inst.email}"
+                                            th:data-branch="${inst.branch != null ? inst.branch : ''}"
+                                            onclick="openEditModalFromBtn(this)"
                                             class="px-3 py-1.5 text-xs bg-blue-500/20 text-blue-400 rounded-lg hover:bg-blue-500/30 transition-all">
                                         <i class="fas fa-edit mr-1"></i>Edit
                                     </button>
-                                    <button th:onclick="'deleteInstructor(' + ${inst.id} + ')'"
+                                    <button th:data-id="${inst.id}"
+                                            onclick="deleteInstructorFromBtn(this)"
                                             class="px-3 py-1.5 text-xs bg-red-500/20 text-red-400 rounded-lg hover:bg-red-500/30 transition-all">
                                         <i class="fas fa-trash mr-1"></i>Delete
                                     </button>
@@ -231,6 +236,14 @@
 </div>
 
 <script>
+    function openEditModalFromBtn(btn) {
+        openEditModal(btn.dataset.id, btn.dataset.name, btn.dataset.email, btn.dataset.branch);
+    }
+
+    function deleteInstructorFromBtn(btn) {
+        deleteInstructor(btn.dataset.id);
+    }
+
     function openAddModal() {
         document.getElementById('addForm').reset();
         document.getElementById('addError').classList.add('hidden');
