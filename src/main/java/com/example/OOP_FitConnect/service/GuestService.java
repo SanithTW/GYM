@@ -79,7 +79,8 @@ public class GuestService {
      * Register a new user with the given role (USER or INSTRUCTOR).
      * Defaults to USER if role is null or blank.
      */
-    public User registerUser(String name, String email, String password, int verificationCode, String branch, String role) {
+    public User registerUser(String name, String email, String password, int verificationCode, String branch,
+            String role) {
         if (dbController.getUserByEmail(email) != null) {
             throw new IllegalArgumentException("Email already in use");
         }
@@ -139,12 +140,14 @@ public class GuestService {
     }
 
     public boolean isValidResetCode(int code) {
-        if (code == 0) return false;
+        if (code == 0)
+            return false;
         return dbController.getUserByVerificationCode(code) != null;
     }
 
     public boolean resetPassword(int code, String newPassword) {
-        if (code == 0) return false;
+        if (code == 0)
+            return false;
         User user = dbController.getUserByVerificationCode(code);
         if (user != null) {
             user.setPassword(newPassword);
@@ -174,8 +177,8 @@ public class GuestService {
         String body = "Hello " + user.getName() + ",\n\n" +
                 "Please verify your email by clicking the link below:\n" +
                 BASE_URL + "/verify?code=" + verificationCode + "\n\n" +
-                "Thank you,\nFitConnect Team";
-        sendEmail(user.getEmail(), "Verify your FitConnect account", body);
+                "Thank you,\nSmart Fitness Team";
+        sendEmail(user.getEmail(), "Verify your Smart Fitness account", body);
     }
 
     public void sendPasswordResetEmail(User user, int resetCode) {
@@ -183,7 +186,7 @@ public class GuestService {
                 "Please reset your password by clicking the link below:\n" +
                 BASE_URL + "/reset-password?code=" + resetCode + "\n\n" +
                 "If you did not request this, please ignore this email.\n\n" +
-                "Thank you,\nFitConnect Team";
+                "Thank you,\nSmart Fitness Team";
         sendEmail(user.getEmail(), "FitConnect Password Reset", body);
     }
 
@@ -205,8 +208,10 @@ public class GuestService {
 
     public boolean canAccessWorkout(int userId, String workoutId) {
         User user = dbController.getUserById(userId);
-        if (user == null) return false;
-        if (user.isAdmin() || user.isGuest()) return true;
+        if (user == null)
+            return false;
+        if (user.isAdmin() || user.isGuest())
+            return true;
         return user.getWorkoutPlans().stream()
                 .anyMatch(plan -> plan.getId().equals(workoutId));
     }
@@ -232,7 +237,7 @@ public class GuestService {
         User guestUser = new User();
         guestUser.setId(-1);
         guestUser.setName("Guest");
-        guestUser.setEmail("guest@fitconnect.com");
+        guestUser.setEmail("guest@smartfitness.com");
         guestUser.setRole("GUEST");
         return guestUser;
     }

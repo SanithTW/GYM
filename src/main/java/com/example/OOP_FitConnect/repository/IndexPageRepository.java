@@ -7,6 +7,6 @@ import org.springframework.stereotype.Repository;
 public class IndexPageRepository {
 
     public IndexPage getWelcomeMessage() {
-        return new IndexPage("Welcome to FitConnect Gym!");
+        return new IndexPage("Welcome to Smart Fitness Gym!");
     }
 }
