@@ -1,6 +1,6 @@
 <!-- schedule.html -->
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -9,263 +9,199 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
-
-        body {
-            font-family: 'Poppins', sans-serif;
-            background: linear-gradient(to bottom right, #1a1c2e, #14162a);
-            color: #fff;
-        }
-
-        .animate-fade-in {
-            animation: fadeIn 0.5s ease-in-out;
-        }
-
-        .animate-slide-up {
-            animation: slideUp 0.5s ease-out forwards;
-            opacity: 0;
-        }
-
-        .glass-effect {
-            background: rgba(255, 255, 255, 0.05);
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-        }
-
-        .scale-hover:hover {
-            transform: scale(1.02);
-            transition: transform 0.3s ease;
-        }
-
-        @keyframes fadeIn {
-            from { opacity: 0; }
-            to { opacity: 1; }
-        }
-
-        @keyframes slideUp {
-            from {
-                opacity: 0;
-                transform: translateY(20px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
-        /* Custom scrollbar */
-        ::-webkit-scrollbar {
-            width: 8px;
-        }
-
-        ::-webkit-scrollbar-track {
-            background: rgba(255, 255, 255, 0.05);
-        }
-
-        ::-webkit-scrollbar-thumb {
-            background: rgba(255, 255, 255, 0.2);
-            border-radius: 4px;
-        }
-
-        ::-webkit-scrollbar-thumb:hover {
-            background: rgba(255, 255, 255, 0.3);
-        }
+        body { font-family: 'Poppins', sans-serif; background: linear-gradient(to bottom right, #1a1c2e, #14162a); color: #fff; }
+        .glass-effect { background: rgba(255,255,255,0.05); backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.1); }
+        .day-card { background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08); }
     </style>
 </head>
 <body>
 <div class="flex h-screen overflow-hidden">
-    <!-- Sidebar Navigation -->
-    <aside class="hidden lg:flex flex-col w-64 h-screen glass-effect animate-fade-in">
+
+    <!-- Sidebar -->
+    <aside class="hidden lg:flex flex-col w-64 h-screen glass-effect flex-shrink-0">
         <div class="p-6">
-            <a href="index.html" class="flex items-center gap-3">
+            <a href="/user/dashboard" class="flex items-center gap-3">
                 <div class="bg-gradient-to-r from-purple-500 to-blue-500 p-2.5 rounded-lg">
                     <i class="fas fa-dumbbell text-white"></i>
                 </div>
                 <h1 class="text-2xl font-bold bg-gradient-to-r from-blue-400 via-purple-400 to-pink-400 bg-clip-text text-transparent">FitConnect</h1>
             </a>
         </div>
-
-        <nav class="flex-1 p-4 space-y-2">
+        <nav class="flex-1 px-4 space-y-2 overflow-y-auto">
             <a href="/user/dashboard" class="flex items-center gap-3 px-4 py-3 rounded-xl text-gray-300 hover:bg-white/10 transition-all duration-300">
-                <i class="fas fa-th-large"></i>
+                <i class="fas fa-th-large w-4 text-center"></i>
                 <span class="font-medium">Dashboard</span>
             </a>
             <a href="/user/profile" class="flex items-center gap-3 px-4 py-3 rounded-xl text-gray-300 hover:bg-white/10 transition-all duration-300">
-                <i class="fas fa-user"></i>
+                <i class="fas fa-user w-4 text-center"></i>
                 <span class="font-medium">Profile</span>
             </a>
-            <a href="/user/schedule" class="flex items-center gap-3 px-4 py-3 rounded-xl bg-gradient-to-r from-purple-600 to-blue-600 text-white scale-hover transition-all duration-300">
-                <i class="fas fa-calendar"></i>
+            <a href="/user/schedule" class="flex items-center gap-3 px-4 py-3 rounded-xl bg-gradient-to-r from-purple-600 to-blue-600 text-white transition-all duration-300">
+                <i class="fas fa-calendar w-4 text-center"></i>
                 <span class="font-medium">Schedule</span>
             </a>
             <a href="/exercises" class="flex items-center gap-3 px-4 py-3 rounded-xl text-gray-300 hover:bg-white/10 transition-all duration-300">
-                <i class="fas fa-dumbbell"></i>
+                <i class="fas fa-dumbbell w-4 text-center"></i>
                 <span class="font-medium">Exercises</span>
             </a>
             <a href="/monthprogress" class="flex items-center gap-3 px-4 py-3 rounded-xl text-gray-300 hover:bg-white/10 transition-all duration-300">
-                <i class="fas fa-chart-line"></i>
+                <i class="fas fa-chart-line w-4 text-center"></i>
                 <span class="font-medium">Progress</span>
             </a>
             <a href="/diet-plan" class="flex items-center gap-3 px-4 py-3 rounded-xl text-gray-300 hover:bg-white/10 transition-all duration-300">
-                <i class="fas fa-apple-alt"></i>
+                <i class="fas fa-apple-alt w-4 text-center"></i>
                 <span class="font-medium">Diet Plan</span>
             </a>
+            <a href="/user/announcements" class="flex items-center gap-3 px-4 py-3 rounded-xl text-gray-300 hover:bg-white/10 transition-all duration-300">
+                <i class="fas fa-bullhorn w-4 text-center"></i>
+                <span class="font-medium">Announcements</span>
+            </a>
             <a href="/user/settings" class="flex items-center gap-3 px-4 py-3 rounded-xl text-gray-300 hover:bg-white/10 transition-all duration-300">
-                <i class="fas fa-cog"></i>
+                <i class="fas fa-cog w-4 text-center"></i>
                 <span class="font-medium">Settings</span>
             </a>
         </nav>
-
         <div class="p-4 border-t border-white/10">
             <div class="flex items-center gap-3 mb-3">
-                <div class="h-10 w-10 rounded-full bg-gradient-to-r from-pink-500 to-purple-500 flex items-center justify-center">
-                    <span class="font-semibold">??</span>
+                <div class="h-10 w-10 rounded-full bg-gradient-to-r from-pink-500 to-purple-500 flex items-center justify-center flex-shrink-0">
+                    <i class="fas fa-user text-sm text-white"></i>
                 </div>
-                <div>
-                    <h3 class="font-medium"><span th:text="${user.name}">User</span><</h3>
+                <div class="min-w-0">
+                    <h3 class="font-medium truncate" th:text="${user.name}">User</h3>
+                    <p class="text-xs text-gray-400">Member</p>
                 </div>
             </div>
             <a href="/logout">
-                <button class="w-full mt-2 bg-white/10 hover:bg-white/20 text-white rounded-xl p-2.5 transition-all duration-300 flex items-center justify-center gap-2">
-                    <i class="fas fa-sign-out-alt"></i>
-                    <span>Log Out</span>
+                <button class="w-full mt-2 bg-white/10 hover:bg-white/20 text-white rounded-xl p-2.5 flex items-center justify-center gap-2 transition-all duration-300">
+                    <i class="fas fa-sign-out-alt"></i><span>Log Out</span>
                 </button>
             </a>
         </div>
     </aside>
 
-    <!-- Mobile Header -->
-    <header class="lg:hidden fixed w-full flex items-center justify-between p-4 glass-effect z-50">
-        <a href="index.html" class="flex items-center gap-2">
-            <div class="bg-gradient-to-r from-purple-500 to-blue-500 p-1.5 rounded-lg">
-                <i class="fas fa-dumbbell text-white"></i>
-            </div>
-            <h1 class="text-lg font-bold bg-gradient-to-r from-blue-400 via-purple-400 to-pink-400 bg-clip-text text-transparent">FitConnect</h1>
-        </a>
-
-        <div class="flex items-center gap-4">
-            <div class="relative">
-                <i class="fas fa-bell text-gray-300"></i>
-                <span class="absolute -top-1 -right-1 h-4 w-4 bg-red-500 rounded-full flex items-center justify-center text-xs">3</span>
-            </div>
-            <button aria-label="Toggle menu" class="p-1.5 rounded-lg bg-white/10">
-                <i class="fas fa-bars"></i>
-            </button>
-        </div>
-    </header>
-
     <!-- Main Content -->
-    <main class="flex-1 overflow-y-auto py-4 lg:py-6 px-4 lg:px-8 lg:pt-0 mt-16 lg:mt-0">
-        <div class="max-w-6xl mx-auto">
-            <!-- Header Section -->
-            <header class="mb-8 animate-slide-up" style="animation-delay: 0.1s;">
+    <main class="flex-1 overflow-y-auto p-6">
+        <div class="max-w-5xl mx-auto">
+
+            <!-- Header -->
+            <header class="mb-8">
                 <h1 class="text-3xl font-bold bg-gradient-to-r from-blue-400 via-purple-400 to-pink-400 bg-clip-text text-transparent">Workout Schedule</h1>
-                <p class="text-gray-400 mt-2">Plan and manage your upcoming workouts</p>
+                <p class="text-gray-400 mt-1">Your instructor-assigned training programs</p>
             </header>
 
-            <!-- Class List Section -->
-            <div id="class-list" class="space-y-6"></div>
+            <!-- Programs -->
+            <div th:if="${assignedWorkoutPrograms != null and !#lists.isEmpty(assignedWorkoutPrograms)}" class="space-y-8">
+                <div th:each="prog : ${assignedWorkoutPrograms}" class="glass-effect rounded-xl overflow-hidden">
 
-            <!-- Workout Timeline -->
-            <div class="glass-effect rounded-xl p-6">
-                <div class="relative pl-8 pb-10">
+                    <!-- Program Header -->
+                    <div class="p-5 border-b border-white/10">
+                        <div class="flex flex-wrap items-start justify-between gap-3">
+                            <div class="flex items-start gap-4">
+                                <div class="h-12 w-12 rounded-xl bg-gradient-to-br from-purple-500 to-indigo-700 flex items-center justify-center flex-shrink-0">
+                                    <i class="fas fa-dumbbell text-white"></i>
+                                </div>
+                                <div>
+                                    <h2 class="text-lg font-semibold" th:text="${prog.programName}">Program Name</h2>
+                                    <p class="text-xs text-gray-400 mt-0.5">
+                                        By <span th:text="${prog.instructorName != null ? prog.instructorName : 'Instructor'}">Instructor</span>
+                                    </p>
+                                    <div class="flex flex-wrap gap-2 mt-2">
+                                        <span th:if="${prog.fitnessGoal != null}"
+                                              class="text-xs px-2.5 py-1 rounded-full bg-purple-500/20 text-purple-300"
+                                              th:text="${prog.fitnessGoal}">Goal</span>
+                                        <span th:if="${prog.difficulty != null}"
+                                              class="text-xs px-2.5 py-1 rounded-full bg-blue-500/20 text-blue-300"
+                                              th:text="${prog.difficulty}">Difficulty</span>
+                                        <span th:if="${prog.durationWeeks != null}"
+                                              class="text-xs px-2.5 py-1 rounded-full bg-white/10 text-gray-300">
+                                            <i class="fas fa-calendar-alt mr-1"></i><span th:text="${prog.durationWeeks}">0</span> weeks
+                                        </span>
+                                        <span th:if="${prog.sessionsPerWeek != null}"
+                                              class="text-xs px-2.5 py-1 rounded-full bg-white/10 text-gray-300">
+                                            <i class="fas fa-repeat mr-1"></i><span th:text="${prog.sessionsPerWeek}">0</span>x / week
+                                        </span>
+                                        <span th:if="${prog.sessionDurationMin != null}"
+                                              class="text-xs px-2.5 py-1 rounded-full bg-white/10 text-gray-300">
+                                            <i class="fas fa-clock mr-1"></i><span th:text="${prog.sessionDurationMin}">0</span> min
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                            <span th:text="${prog.status}"
+                                  th:class="${prog.status == 'ACTIVE'} ? 'text-xs px-3 py-1 rounded-full bg-blue-500/20 text-blue-400 font-medium' : 'text-xs px-3 py-1 rounded-full bg-gray-500/20 text-gray-400 font-medium'">
+                                ACTIVE
+                            </span>
+                        </div>
+                        <p th:if="${prog.description != null and prog.description != ''}"
+                           class="text-sm text-gray-400 mt-3 italic" th:text="${prog.description}">Description</p>
+                    </div>
 
+                    <!-- Days -->
+                    <div th:if="${prog.days != null and !#lists.isEmpty(prog.days)}" class="p-5 space-y-4">
+                        <h3 class="text-sm font-semibold text-gray-400 uppercase tracking-widest mb-3">Weekly Schedule</h3>
+                        <div th:each="day : ${prog.days}" class="day-card rounded-xl overflow-hidden">
+
+                            <!-- Day Header -->
+                            <div class="flex items-center justify-between px-4 py-3 bg-white/5">
+                                <div class="flex items-center gap-3">
+                                    <div class="h-8 w-8 rounded-lg bg-gradient-to-br from-purple-500/40 to-indigo-600/40 flex items-center justify-center flex-shrink-0">
+                                        <i class="fas fa-calendar-day text-purple-300 text-xs"></i>
+                                    </div>
+                                    <span class="font-semibold text-sm" th:text="${day.dayName}">Day</span>
+                                </div>
+                                <span th:if="${day.focus != null}"
+                                      class="text-xs px-2.5 py-1 rounded-full bg-indigo-500/20 text-indigo-300"
+                                      th:text="${day.focus}">Focus</span>
+                            </div>
+
+                            <!-- Exercises -->
+                            <div th:if="${day.exercises != null and !#lists.isEmpty(day.exercises)}" class="px-4 py-3">
+                                <table class="w-full text-sm">
+                                    <thead>
+                                        <tr class="text-xs text-gray-500 border-b border-white/5">
+                                            <th class="text-left pb-2 font-medium">Exercise</th>
+                                            <th class="text-center pb-2 font-medium">Sets</th>
+                                            <th class="text-center pb-2 font-medium">Reps / Duration</th>
+                                            <th class="text-center pb-2 font-medium">Rest</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody class="divide-y divide-white/5">
+                                        <tr th:each="ex : ${day.exercises}" class="text-gray-300">
+                                            <td class="py-2.5 pr-4">
+                                                <span class="font-medium text-white" th:text="${ex.name}">Exercise</span>
+                                            </td>
+                                            <td class="py-2.5 text-center" th:text="${ex.sets != null ? ex.sets : '-'}">-</td>
+                                            <td class="py-2.5 text-center" th:text="${ex.reps != null ? ex.reps : '-'}">-</td>
+                                            <td class="py-2.5 text-center">
+                                                <span th:if="${ex.restSeconds != null}" th:text="${ex.restSeconds + 's'}">-</span>
+                                                <span th:if="${ex.restSeconds == null}">-</span>
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                            <div th:if="${day.exercises == null or #lists.isEmpty(day.exercises)}"
+                                 class="px-4 py-3 text-xs text-gray-500 italic">No exercises added for this day.</div>
+                        </div>
+                    </div>
+
+                    <div th:if="${prog.days == null or #lists.isEmpty(prog.days)}"
+                         class="p-5 text-center text-sm text-gray-500 italic">No weekly schedule defined for this program.</div>
                 </div>
             </div>
+
+            <!-- Empty State -->
+            <div th:if="${assignedWorkoutPrograms == null or #lists.isEmpty(assignedWorkoutPrograms)}"
+                 class="glass-effect rounded-xl p-16 text-center">
+                <div class="w-16 h-16 bg-purple-500/10 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <i class="fas fa-calendar-times text-3xl text-purple-400 opacity-50"></i>
+                </div>
+                <h3 class="text-lg font-semibold text-gray-300 mb-2">No Workout Programs Yet</h3>
+                <p class="text-sm text-gray-500">Your instructor hasn't assigned any workout programs to you yet.</p>
+            </div>
+
         </div>
     </main>
 </div>
-
-<!-- JavaScript for toggles and interactions -->
-<script>
-    document.addEventListener('DOMContentLoaded', function() {
-        // Mobile menu toggle
-        const menuButton = document.querySelector('button[aria-label="Toggle menu"]');
-        if (menuButton) {
-            menuButton.addEventListener('click', function() {
-                console.log('Menu toggled');
-                // In a real implementation, show mobile menu
-            });
-        }
-
-        // Add animation effect
-        const elementsToAnimate = document.querySelectorAll('.animate-slide-up');
-        elementsToAnimate.forEach(element => {
-            setTimeout(() => {
-                element.style.opacity = '1';
-                element.style.transform = 'translateY(0)';
-            }, parseFloat(element.style.animationDelay || '0') * 1000);
-        });
-
-        // Subtle hover effects on cards
-        const cards = document.querySelectorAll('.glass-effect');
-        cards.forEach(card => {
-            card.addEventListener('mouseenter', function() {
-                card.style.boxShadow = '0 10px 30px -15px rgba(0, 0, 255, 0.15)';
-                card.style.borderColor = 'rgba(255, 255, 255, 0.2)';
-                card.style.transition = 'all 0.3s ease';
-            });
-
-            card.addEventListener('mouseleave', function() {
-                card.style.boxShadow = 'none';
-                card.style.borderColor = 'rgba(255, 255, 255, 0.1)';
-            });
-        });
-    });
-
-    async function loadClasses() {
-        const response = await fetch('/admin/api/classes');
-        const classes = await response.json();
-        const container = document.getElementById('class-list');
-        container.innerHTML = '';
-        classes.forEach(cls => {
-            const div = document.createElement('div');
-            div.className = 'glass-effect p-4 rounded-xl';
-            div.innerHTML = `
-                <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-                    <div>
-                        <h3 class="text-xl font-semibold">${cls.name}</h3>
-                        <p class="text-gray-400">Instructor: ${cls.instructor}</p>
-                        <p class="text-gray-400">Date: ${cls.date} | Time: ${cls.time}</p>
-                        <p class="text-gray-400">Duration: ${cls.duration} min | Capacity: ${cls.capacity}</p>
-                    </div>
-                    <div class="flex flex-col items-end gap-2">
-                        <button class="enroll-btn px-4 py-2 rounded-lg bg-gradient-to-r from-blue-500 to-purple-500 hover:opacity-90 transition-all text-white" data-id="${cls.id}">Enroll</button>
-                        <span id="booking-count-${cls.id}" class="text-sm text-gray-300"></span>
-                    </div>
-                </div>
-            `;
-            container.appendChild(div);
-            updateBookingCount(cls.id);
-        });
-        // Add event listeners for enroll buttons
-        document.querySelectorAll('.enroll-btn').forEach(btn => {
-            btn.addEventListener('click', function() {
-                const classId = btn.getAttribute('data-id');
-                enroll(classId);
-            });
-        });
-    }
-
-    async function updateBookingCount(classId) {
-        const response = await fetch(`/admin/api/classes/${classId}/bookings`);
-        const count = await response.json();
-        document.getElementById(`booking-count-${classId}`).textContent = `Enrolled: ${count}`;
-    }
-
-    async function enroll(classId) {
-        // Replace with actual userId from session or context
-        const userId = prompt('Enter your user ID to enroll:');
-        if (!userId) return;
-        const response = await fetch(`/admin/api/classes/${classId}/enroll?userId=${userId}`, { method: 'POST' });
-        if (response.ok) {
-            alert('Enrolled!');
-            updateBookingCount(classId);
-        } else {
-            alert('Failed to enroll');
-        }
-    }
-
-    document.addEventListener('DOMContentLoaded', loadClasses);
-</script>
 </body>
 </html>
