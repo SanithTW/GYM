@@ -15,15 +15,10 @@ public class DatabaseInitializer implements CommandLineRunner {
     @Autowired
     private JdbcTemplate jdbcTemplate;
 
-    /**
-     * Runs schema migrations early via @PostConstruct so that tables/columns
-     * exist before any other @PostConstruct (like GuestService.init()) queries
-     * them.
-     */
     @PostConstruct
     public void initSchema() {
         try {
-            // Ensure users table exists
+            // users table
             jdbcTemplate.execute("""
                         CREATE TABLE IF NOT EXISTS users (
                             id INT AUTO_INCREMENT PRIMARY KEY,
@@ -35,14 +30,11 @@ public class DatabaseInitializer implements CommandLineRunner {
                         )
                     """);
 
-            // Add current_plan_id column to users table if not exists
-            try {
-                jdbcTemplate.execute("ALTER TABLE users ADD COLUMN current_plan_id INT DEFAULT NULL");
-            } catch (Exception e) {
-                // Column already exists, ignore
-            }
+            // Add columns that may not exist yet (ALTER ignores if already present via try/catch)
+            tryAlter("ALTER TABLE users ADD COLUMN current_plan_id INT DEFAULT NULL");
+            tryAlter("ALTER TABLE users ADD COLUMN role VARCHAR(20) DEFAULT 'USER'");
 
-            // Create membership_plans table
+            // Membership plans
             jdbcTemplate.execute("""
                         CREATE TABLE IF NOT EXISTS membership_plans (
                             id INT AUTO_INCREMENT PRIMARY KEY,
@@ -55,7 +47,7 @@ public class DatabaseInitializer implements CommandLineRunner {
                         )
                     """);
 
-            // Create payments table (without FK constraints to avoid index issues on TiDB)
+            // Payments
             jdbcTemplate.execute("""
                         CREATE TABLE IF NOT EXISTS payments (
                             id INT AUTO_INCREMENT PRIMARY KEY,
@@ -70,16 +62,106 @@ public class DatabaseInitializer implements CommandLineRunner {
                         )
                     """);
 
+            // Diet Plans
+            jdbcTemplate.execute("""
+                        CREATE TABLE IF NOT EXISTS diet_plans (
+                            id BIGINT AUTO_INCREMENT PRIMARY KEY,
+                            plan_name VARCHAR(255) NOT NULL,
+                            instructor_id INT NOT NULL,
+                            member_id INT DEFAULT NULL,
+                            goal VARCHAR(50),
+                            daily_calories INT,
+                            duration_weeks INT,
+                            protein_grams INT,
+                            carbs_grams INT,
+                            fat_grams INT,
+                            notes TEXT,
+                            status VARCHAR(20) DEFAULT 'ACTIVE',
+                            created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+                        )
+                    """);
+
+            // Diet Plan Meals
+            jdbcTemplate.execute("""
+                        CREATE TABLE IF NOT EXISTS diet_plan_meals (
+                            id BIGINT AUTO_INCREMENT PRIMARY KEY,
+                            diet_plan_id BIGINT NOT NULL,
+                            meal_type VARCHAR(50),
+                            food_items TEXT,
+                            calories INT
+                        )
+                    """);
+
+            // Workout Programs
+            jdbcTemplate.execute("""
+                        CREATE TABLE IF NOT EXISTS workout_programs (
+                            id BIGINT AUTO_INCREMENT PRIMARY KEY,
+                            program_name VARCHAR(255) NOT NULL,
+                            instructor_id INT NOT NULL,
+                            member_id INT DEFAULT NULL,
+                            fitness_goal VARCHAR(50),
+                            difficulty VARCHAR(20),
+                            duration_weeks INT,
+                            sessions_per_week INT,
+                            session_duration_min INT,
+                            description TEXT,
+                            status VARCHAR(20) DEFAULT 'ACTIVE',
+                            created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+                        )
+                    """);
+
+            // Workout Days
+            jdbcTemplate.execute("""
+                        CREATE TABLE IF NOT EXISTS workout_days (
+                            id BIGINT AUTO_INCREMENT PRIMARY KEY,
+                            program_id BIGINT NOT NULL,
+                            day_name VARCHAR(20),
+                            focus VARCHAR(50),
+                            day_order INT DEFAULT 0
+                        )
+                    """);
+
+            // Workout Exercises
+            jdbcTemplate.execute("""
+                        CREATE TABLE IF NOT EXISTS workout_exercises (
+                            id BIGINT AUTO_INCREMENT PRIMARY KEY,
+                            day_id BIGINT NOT NULL,
+                            exercise_name VARCHAR(255),
+                            sets INT,
+                            reps VARCHAR(50),
+                            rest_seconds INT,
+                            exercise_order INT DEFAULT 0
+                        )
+                    """);
+
+            // Announcements
+            jdbcTemplate.execute("""
+                        CREATE TABLE IF NOT EXISTS announcements (
+                            id BIGINT AUTO_INCREMENT PRIMARY KEY,
+                            title VARCHAR(255) NOT NULL,
+                            content TEXT NOT NULL,
+                            posted_by VARCHAR(100),
+                            created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+                            active BOOLEAN DEFAULT TRUE
+                        )
+                    """);
+
             System.out.println("[DatabaseInitializer] Schema initialized successfully.");
         } catch (Exception e) {
-            System.err.println(
-                    "[DatabaseInitializer] WARNING: Schema init failed (may retry at startup): " + e.getMessage());
+            System.err.println("[DatabaseInitializer] WARNING: Schema init failed: " + e.getMessage());
+        }
+    }
+
+    private void tryAlter(String sql) {
+        try {
+            jdbcTemplate.execute(sql);
+        } catch (Exception ignored) {
+            // Column already exists — safe to ignore
         }
     }
 
     @Override
     public void run(String... args) {
-        // Seed default plans if table is empty
         try {
             Integer planCount = jdbcTemplate.queryForObject("SELECT COUNT(*) FROM membership_plans", Integer.class);
             if (planCount != null && planCount == 0) {
