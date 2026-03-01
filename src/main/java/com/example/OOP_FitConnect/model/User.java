@@ -8,16 +8,16 @@ public class User {
     private String name;
     private String email;
     private String password;
-    private int verificationCode; // random int code for email verification & password reset
+    private int verificationCode;
     private String branch;
-    private Integer currentPlanId; // FK to membership_plans table
+    private Integer currentPlanId;
 
-    // Transient fields (not stored in DB)
-    private String role;        // computed: ADMIN if email matches admin email
+    // Stored in DB: USER, INSTRUCTOR, ADMIN
+    private String role;
     private List<WorkoutPlan> workoutPlans;
     private Double bmi;
     private String profileImage;
-    private String currentPlanName; // transient: for display
+    private String currentPlanName;
 
     private static final String ADMIN_EMAIL = "admin@user.com";
 
@@ -42,115 +42,49 @@ public class User {
         return "ADMIN".equals(getRole());
     }
 
+    public boolean isInstructor() {
+        return "INSTRUCTOR".equals(getRole());
+    }
+
     public boolean isGuest() {
         return "GUEST".equals(role);
     }
 
-    // Verification helpers
     public boolean isVerified() {
-        return verificationCode == 0; // 0 means verified (no pending code)
+        return verificationCode == 0;
     }
 
-    // ID
-    public int getId() {
-        return id;
-    }
+    public int getId() { return id; }
+    public void setId(int id) { this.id = id; }
 
-    public void setId(int id) {
-        this.id = id;
-    }
+    public String getName() { return name; }
+    public void setName(String name) { this.name = name; }
 
-    // Name
-    public String getName() {
-        return name;
-    }
+    public String getEmail() { return email; }
+    public void setEmail(String email) { this.email = email; }
 
-    public void setName(String name) {
-        this.name = name;
-    }
+    public String getPassword() { return password; }
+    public void setPassword(String password) { this.password = password; }
 
-    // Email
-    public String getEmail() {
-        return email;
-    }
+    public int getVerificationCode() { return verificationCode; }
+    public void setVerificationCode(int verificationCode) { this.verificationCode = verificationCode; }
 
-    public void setEmail(String email) {
-        this.email = email;
-    }
+    public String getBranch() { return branch; }
+    public void setBranch(String branch) { this.branch = branch; }
 
-    // Password
-    public String getPassword() {
-        return password;
-    }
+    public Double getBmi() { return bmi; }
+    public void setBmi(Double bmi) { this.bmi = bmi; }
 
-    public void setPassword(String password) {
-        this.password = password;
-    }
+    public List<WorkoutPlan> getWorkoutPlans() { return workoutPlans; }
+    public void setWorkoutPlans(List<WorkoutPlan> workoutPlans) { this.workoutPlans = workoutPlans; }
+    public void addWorkoutPlan(WorkoutPlan workoutPlan) { this.workoutPlans.add(workoutPlan); }
 
-    // Verification Code
-    public int getVerificationCode() {
-        return verificationCode;
-    }
+    public String getProfileImage() { return profileImage; }
+    public void setProfileImage(String profileImage) { this.profileImage = profileImage; }
 
-    public void setVerificationCode(int verificationCode) {
-        this.verificationCode = verificationCode;
-    }
+    public Integer getCurrentPlanId() { return currentPlanId; }
+    public void setCurrentPlanId(Integer currentPlanId) { this.currentPlanId = currentPlanId; }
 
-    // Branch
-    public String getBranch() {
-        return branch;
-    }
-
-    public void setBranch(String branch) {
-        this.branch = branch;
-    }
-
-    // BMI (transient)
-    public Double getBmi() {
-        return bmi;
-    }
-
-    public void setBmi(Double bmi) {
-        this.bmi = bmi;
-    }
-
-    // Workout Plans (transient)
-    public List<WorkoutPlan> getWorkoutPlans() {
-        return workoutPlans;
-    }
-
-    public void setWorkoutPlans(List<WorkoutPlan> workoutPlans) {
-        this.workoutPlans = workoutPlans;
-    }
-
-    public void addWorkoutPlan(WorkoutPlan workoutPlan) {
-        this.workoutPlans.add(workoutPlan);
-    }
-
-    // Profile Image (transient)
-    public String getProfileImage() {
-        return profileImage;
-    }
-
-    public void setProfileImage(String profileImage) {
-        this.profileImage = profileImage;
-    }
-
-    // Current Plan ID (stored in DB)
-    public Integer getCurrentPlanId() {
-        return currentPlanId;
-    }
-
-    public void setCurrentPlanId(Integer currentPlanId) {
-        this.currentPlanId = currentPlanId;
-    }
-
-    // Current Plan Name (transient, for display)
-    public String getCurrentPlanName() {
-        return currentPlanName;
-    }
-
-    public void setCurrentPlanName(String currentPlanName) {
-        this.currentPlanName = currentPlanName;
-    }
+    public String getCurrentPlanName() { return currentPlanName; }
+    public void setCurrentPlanName(String currentPlanName) { this.currentPlanName = currentPlanName; }
 }

@@ -36,5 +36,13 @@ public class UserService {
     public void deleteUser(int id) {
         dbController.deleteUser(id);
     }
+
+    public List<User> getAllMembers() {
+        return dbController.getAllMembers();
+    }
+
+    public List<User> getAllInstructors() {
+        return dbController.getAllInstructors();
+    }
     // Add more user-related methods as needed
 }

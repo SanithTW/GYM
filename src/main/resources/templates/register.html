@@ -20,6 +20,7 @@
                 const branch = document.getElementById('branch').value;
                 const password = document.getElementById('password').value;
                 const confirmPassword = document.getElementById('confirmPassword').value;
+                const role = document.querySelector('input[name="role"]:checked')?.value || 'USER';
 
                 // Simple validation
                 if (!fullName || !email || !branch || !password || !confirmPassword) {
@@ -53,7 +54,8 @@
                         name: fullName,
                         email: email,
                         password: password,
-                        branch: branch
+                        branch: branch,
+                        role: role
                     })
                 })
                 .then(response => response.json())
@@ -257,6 +259,26 @@
                                 minlength="8"
                                 class="pl-10 w-full rounded-md border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
                         />
+                    </div>
+                </div>
+
+                <div class="space-y-2">
+                    <label class="text-sm font-medium">Account Type</label>
+                    <div class="flex gap-3">
+                        <label class="flex-1 flex items-center gap-2 cursor-pointer border border-gray-300 rounded-md px-3 py-2 hover:bg-blue-50 transition-colors has-[:checked]:border-blue-500 has-[:checked]:bg-blue-50">
+                            <input type="radio" name="role" id="roleUser" value="USER" checked class="accent-blue-500">
+                            <div>
+                                <span class="text-sm font-medium block">Member</span>
+                                <span class="text-xs text-gray-500">Access workouts &amp; diet plans</span>
+                            </div>
+                        </label>
+                        <label class="flex-1 flex items-center gap-2 cursor-pointer border border-gray-300 rounded-md px-3 py-2 hover:bg-blue-50 transition-colors has-[:checked]:border-blue-500 has-[:checked]:bg-blue-50">
+                            <input type="radio" name="role" id="roleInstructor" value="INSTRUCTOR" class="accent-blue-500">
+                            <div>
+                                <span class="text-sm font-medium block">Instructor</span>
+                                <span class="text-xs text-gray-500">Create &amp; assign plans</span>
+                            </div>
+                        </label>
                     </div>
                 </div>
 

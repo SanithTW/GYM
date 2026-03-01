@@ -33,12 +33,11 @@ public class GuestService {
         int delayMs = 5000;
         for (int attempt = 1; attempt <= maxRetries; attempt++) {
             try {
-                // Check if admin already exists
                 User existingAdmin = dbController.getUserByEmail(ADMIN_EMAIL);
                 if (existingAdmin == null) {
                     createAdminUser();
                 }
-                return; // success, exit
+                return;
             } catch (Exception e) {
                 if (attempt < maxRetries) {
                     System.err.println("[GuestService] DB not ready (attempt " + attempt + "/" + maxRetries
@@ -62,8 +61,9 @@ public class GuestService {
         admin.setName("Admin");
         admin.setEmail(ADMIN_EMAIL);
         admin.setPassword("1234567890");
-        admin.setVerificationCode(0); // 0 = verified
+        admin.setVerificationCode(0);
         admin.setBranch(null);
+        admin.setRole("ADMIN");
         dbController.saveUser(admin);
     }
 
@@ -75,9 +75,18 @@ public class GuestService {
         return null;
     }
 
-    public User registerUser(String name, String email, String password, int verificationCode, String branch) {
+    /**
+     * Register a new user with the given role (USER or INSTRUCTOR).
+     * Defaults to USER if role is null or blank.
+     */
+    public User registerUser(String name, String email, String password, int verificationCode, String branch, String role) {
         if (dbController.getUserByEmail(email) != null) {
             throw new IllegalArgumentException("Email already in use");
+        }
+
+        String resolvedRole = (role != null && !role.isBlank()) ? role.toUpperCase() : "USER";
+        if (!resolvedRole.equals("INSTRUCTOR")) {
+            resolvedRole = "USER";
         }
 
         User user = new User();
@@ -86,12 +95,22 @@ public class GuestService {
         user.setPassword(password);
         user.setVerificationCode(verificationCode);
         user.setBranch(branch);
+        user.setRole(resolvedRole);
         dbController.saveUser(user);
         return user;
     }
 
+    /** Backward-compatible overload — defaults to USER role. */
+    public User registerUser(String name, String email, String password, int verificationCode, String branch) {
+        return registerUser(name, email, password, verificationCode, branch, "USER");
+    }
+
     public List<User> getAllUsers() {
         return dbController.getAllUsers();
+    }
+
+    public List<User> getAllMembers() {
+        return dbController.getAllMembers();
     }
 
     public User getUserByEmail(String email) {
@@ -105,41 +124,31 @@ public class GuestService {
     public boolean verifyEmail(int code) {
         User user = dbController.getUserByVerificationCode(code);
         if (user != null) {
-            user.setVerificationCode(0); // 0 = verified
+            user.setVerificationCode(0);
             dbController.updateUser(user);
             return true;
         }
         return false;
     }
 
-    /**
-     * Generate a 6-digit verification code for password reset and store it on the
-     * user.
-     */
     public int generatePasswordResetCode(User user) {
-        int resetCode = 100000 + random.nextInt(900000); // 6-digit code
+        int resetCode = 100000 + random.nextInt(900000);
         user.setVerificationCode(resetCode);
         dbController.updateUser(user);
         return resetCode;
     }
 
-    /**
-     * Check if the given code matches any user's verificationCode.
-     */
     public boolean isValidResetCode(int code) {
-        if (code == 0)
-            return false;
-        User user = dbController.getUserByVerificationCode(code);
-        return user != null;
+        if (code == 0) return false;
+        return dbController.getUserByVerificationCode(code) != null;
     }
 
     public boolean resetPassword(int code, String newPassword) {
-        if (code == 0)
-            return false;
+        if (code == 0) return false;
         User user = dbController.getUserByVerificationCode(code);
         if (user != null) {
             user.setPassword(newPassword);
-            user.setVerificationCode(0); // clear the code
+            user.setVerificationCode(0);
             dbController.updateUser(user);
             return true;
         }
@@ -150,7 +159,6 @@ public class GuestService {
         User user = dbController.getUserById(userId);
         if (user != null) {
             user.setBmi(bmi);
-            // BMI is transient, not stored in DB table
         }
     }
 
@@ -180,7 +188,7 @@ public class GuestService {
     }
 
     public int generateVerificationCode() {
-        return 100000 + random.nextInt(900000); // 6-digit code
+        return 100000 + random.nextInt(900000);
     }
 
     public List<WorkoutPlan> getUserWorkoutPlans(int userId) {
@@ -197,10 +205,8 @@ public class GuestService {
 
     public boolean canAccessWorkout(int userId, String workoutId) {
         User user = dbController.getUserById(userId);
-        if (user == null)
-            return false;
-        if (user.isAdmin() || user.isGuest())
-            return true;
+        if (user == null) return false;
+        if (user.isAdmin() || user.isGuest()) return true;
         return user.getWorkoutPlans().stream()
                 .anyMatch(plan -> plan.getId().equals(workoutId));
     }
@@ -222,10 +228,9 @@ public class GuestService {
         dbController.deleteUser(userId);
     }
 
-    // Method to create a guest user (transient, not saved to DB)
     public User createGuestUser() {
         User guestUser = new User();
-        guestUser.setId(-1); // transient guest, not in DB
+        guestUser.setId(-1);
         guestUser.setName("Guest");
         guestUser.setEmail("guest@fitconnect.com");
         guestUser.setRole("GUEST");

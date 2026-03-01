@@ -17,6 +17,8 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import com.example.OOP_FitConnect.model.MembershipPlan;
 import com.example.OOP_FitConnect.model.User;
 import com.example.OOP_FitConnect.service.GuestService;
+import com.example.OOP_FitConnect.service.InstructorDietPlanService;
+import com.example.OOP_FitConnect.service.InstructorWorkoutService;
 import com.example.OOP_FitConnect.service.PlanService;
 
 import jakarta.servlet.http.HttpServletRequest;
@@ -31,52 +33,42 @@ public class AuthController {
     @Autowired
     private PlanService planService;
 
-    // Guest accessible pages
+    @Autowired
+    private InstructorDietPlanService dietPlanService;
+
+    @Autowired
+    private InstructorWorkoutService workoutService;
+
+    // ── Guest-accessible pages ─────────────────────────────────────
+
     @GetMapping("/index")
-    public String indexPage() {
-        return "index";
-    }
+    public String indexPage() { return "index"; }
 
     @GetMapping("/gallery")
-    public String galleryPage() {
-        return "gallery";
-    }
+    public String galleryPage() { return "gallery"; }
 
     @GetMapping("/memplan")
-    public String memplanPage() {
-        return "memplan";
-    }
+    public String memplanPage() { return "memplan"; }
 
     @GetMapping("/UserPlans")
-    public String userPlansPage() {
-        return "UserPlans";
-    }
+    public String userPlansPage() { return "UserPlans"; }
 
     @GetMapping("/About_us")
-    public String aboutUsPage() {
-        return "About_us";
-    }
+    public String aboutUsPage() { return "About_us"; }
 
-    // Authentication pages
+    // ── Auth pages ─────────────────────────────────────────────────
+
     @GetMapping("/login")
-    public String loginPage() {
-        return "login";
-    }
+    public String loginPage() { return "login"; }
 
     @GetMapping("/register")
-    public String registerPage() {
-        return "register";
-    }
+    public String registerPage() { return "register"; }
 
     @GetMapping("/forgot-password")
-    public String forgotPasswordPage() {
-        return "forgot-password";
-    }
+    public String forgotPasswordPage() { return "forgot-password"; }
 
     @GetMapping("/verification-result")
-    public String verificationResultPage() {
-        return "verification-result";
-    }
+    public String verificationResultPage() { return "verification-result"; }
 
     @GetMapping("/reset-password")
     public String resetPasswordPage(@RequestParam int code, Model model) {
@@ -87,7 +79,8 @@ public class AuthController {
         return "redirect:/login?error=invalid_code";
     }
 
-    // User and Admin dashboards
+    // ── Member dashboard ───────────────────────────────────────────
+
     @GetMapping("/user/dashboard")
     public String userDashboard(HttpServletRequest request, Model model) {
         HttpSession session = request.getSession(false);
@@ -96,11 +89,18 @@ public class AuthController {
             User user = guestService.getUserById(userId);
             if (user != null && "USER".equals(user.getRole())) {
                 model.addAttribute("user", user);
+                // Inject assigned plans for the dashboard widgets
+                model.addAttribute("assignedDietPlans",
+                        dietPlanService.getPlansByMember(userId));
+                model.addAttribute("assignedWorkoutPrograms",
+                        workoutService.getProgramsByMember(userId));
                 return "member_dashboard";
             }
         }
         return "redirect:/login";
     }
+
+    // ── Admin dashboard ────────────────────────────────────────────
 
     @GetMapping("/dashboard")
     public String adminDashboard(HttpServletRequest request, Model model) {
@@ -116,7 +116,8 @@ public class AuthController {
         return "redirect:/login";
     }
 
-    // Additional user pages
+    // ── Member sub-pages ───────────────────────────────────────────
+
     @GetMapping("/user/profile")
     public String userProfile(HttpServletRequest request, Model model) {
         HttpSession session = request.getSession(false);
@@ -124,12 +125,9 @@ public class AuthController {
             int userId = (Integer) session.getAttribute("userId");
             User user = guestService.getUserById(userId);
             if (user != null && "USER".equals(user.getRole())) {
-                // Load current plan name for display
                 if (user.getCurrentPlanId() != null) {
                     MembershipPlan plan = planService.getPlanById(user.getCurrentPlanId());
-                    if (plan != null) {
-                        user.setCurrentPlanName(plan.getName());
-                    }
+                    if (plan != null) user.setCurrentPlanName(plan.getName());
                 }
                 model.addAttribute("user", user);
                 return "profile";
@@ -146,6 +144,7 @@ public class AuthController {
             User user = guestService.getUserById(userId);
             if (user != null && "USER".equals(user.getRole())) {
                 model.addAttribute("user", user);
+                model.addAttribute("assignedWorkoutPrograms", workoutService.getProgramsByMember(userId));
                 return "schedule";
             }
         }
@@ -166,6 +165,8 @@ public class AuthController {
         return "redirect:/login";
     }
 
+    // ── Login ──────────────────────────────────────────────────────
+
     @PostMapping("/api/login")
     @ResponseBody
     public ResponseEntity<Map<String, Object>> login(
@@ -178,16 +179,16 @@ public class AuthController {
         User user = guestService.authenticate(email, password);
         if (user != null) {
             HttpSession session = request.getSession(true);
-            session.setAttribute("userId", user.getId()); // int
+            session.setAttribute("userId", user.getId());
             session.setAttribute("userEmail", user.getEmail());
             session.setAttribute("userRole", user.getRole());
 
             response.put("success", true);
-            String redirectUrl = "/";
-            if ("ADMIN".equals(user.getRole())) {
-                redirectUrl = "/admin/dashboard";
-            } else if ("USER".equals(user.getRole())) {
-                redirectUrl = "/user/dashboard";
+            String redirectUrl;
+            switch (user.getRole()) {
+                case "ADMIN"       -> redirectUrl = "/admin/dashboard";
+                case "INSTRUCTOR"  -> redirectUrl = "/instructor/dashboard";
+                default            -> redirectUrl = "/user/dashboard";
             }
             response.put("redirect", redirectUrl);
             if (!user.isVerified() && !"ADMIN".equals(user.getRole())) {
@@ -201,6 +202,8 @@ public class AuthController {
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(response);
     }
 
+    // ── Register ───────────────────────────────────────────────────
+
     @PostMapping("/api/register")
     @ResponseBody
     public ResponseEntity<Map<String, Object>> register(
@@ -208,6 +211,7 @@ public class AuthController {
             @RequestParam String email,
             @RequestParam String password,
             @RequestParam String branch,
+            @RequestParam(required = false, defaultValue = "USER") String role,
             HttpServletRequest request) {
 
         Map<String, Object> response = new HashMap<>();
@@ -219,7 +223,7 @@ public class AuthController {
         }
 
         int verificationCode = guestService.generateVerificationCode();
-        User user = guestService.registerUser(name, email, password, verificationCode, branch);
+        User user = guestService.registerUser(name, email, password, verificationCode, branch, role);
         guestService.sendVerificationEmail(user, verificationCode);
 
         response.put("success", true);
@@ -227,21 +231,20 @@ public class AuthController {
         return ResponseEntity.ok(response);
     }
 
+    // ── Forgot / Reset password ────────────────────────────────────
+
     @PostMapping("/api/forgot-password")
     @ResponseBody
     public ResponseEntity<Map<String, Object>> forgotPassword(@RequestParam String email) {
         Map<String, Object> response = new HashMap<>();
-
         User user = guestService.getUserByEmail(email);
         if (user != null) {
             int resetCode = guestService.generatePasswordResetCode(user);
             guestService.sendPasswordResetEmail(user, resetCode);
-
             response.put("success", true);
             response.put("message", "Password reset instructions sent to your email");
             return ResponseEntity.ok(response);
         }
-
         response.put("success", false);
         response.put("message", "Email not found");
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
@@ -254,27 +257,24 @@ public class AuthController {
             @RequestParam String password) {
 
         Map<String, Object> response = new HashMap<>();
-
         if (guestService.resetPassword(code, password)) {
             response.put("success", true);
             response.put("message", "Password reset successful");
             response.put("redirect", "/login");
             return ResponseEntity.ok(response);
         }
-
         response.put("success", false);
         response.put("message", "Invalid or expired code");
         return ResponseEntity.badRequest().body(response);
     }
 
+    // ── Logout ─────────────────────────────────────────────────────
+
     @GetMapping("/logout")
     public String logout(HttpServletRequest request, RedirectAttributes redirectAttributes) {
         HttpSession session = request.getSession(false);
-        if (session != null) {
-            session.invalidate();
-        }
+        if (session != null) session.invalidate();
         redirectAttributes.addFlashAttribute("message", "Logged out successfully.");
         return "redirect:/login";
     }
 }
-
