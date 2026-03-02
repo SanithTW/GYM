@@ -585,30 +585,33 @@ body {
     line-height: 1.6;
 }
 
-.social-icons {
+.trainer-social {
     display: flex;
     justify-content: center;
-    padding: 20px 0;
-    background-color: #f0f0f0;
+    padding: 15px 0 20px;
 }
 
-.social-icons a {
+.trainer-social a {
     display: inline-flex;
     justify-content: center;
     align-items: center;
     width: 35px;
     height: 35px;
     border-radius: 50%;
-    background-color: #ddd;
+    background-color: #f4f4f4;
     color: #333;
     margin: 0 8px;
     text-decoration: none;
-    transition: background-color 0.3s ease, color 0.3s ease;
+    transition: all 0.3s ease;
+    border: 1px solid #ddd;
 }
 
-.social-icons a:hover {
-    background-color: #333;
+.trainer-social a:hover {
+    background-color: #ff2600;
     color: #fff;
+    border-color: #ff2600;
+    transform: translateY(-3px);
+    box-shadow: 0 4px 8px rgba(255, 38, 0, 0.3);
 }
 
 /* Responsive adjustments */
