@@ -26,6 +26,10 @@ public class InstructorDietPlanService {
         return repo.findByInstructorId(instructorId);
     }
 
+    public DietPlan getPlanById(Long planId) {
+        return repo.findById(planId);
+    }
+
     public List<DietPlan> getPlansByMember(int memberId) {
         return repo.findByMemberId(memberId);
     }

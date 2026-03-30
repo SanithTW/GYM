@@ -2,6 +2,7 @@ package com.example.OOP_FitConnect.repository;
 
 import com.example.OOP_FitConnect.model.DietPlan;
 import com.example.OOP_FitConnect.model.Meal;
+import com.example.OOP_FitConnect.model.RecommendedSupplement;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -61,9 +62,33 @@ public class InstructorDietPlanRepository {
         return m;
     };
 
+    private final RowMapper<RecommendedSupplement> supplementMapper = (rs, rowNum) -> {
+        RecommendedSupplement rsObj = new RecommendedSupplement();
+        rsObj.setId(rs.getLong("id"));
+        rsObj.setDietPlanId(rs.getLong("diet_plan_id"));
+        rsObj.setSupplementId(rs.getLong("supplement_id"));
+        rsObj.setDosageNotes(rs.getString("dosage_notes"));
+        try { rsObj.setSupplementName(rs.getString("name")); } catch (Exception ignored) {}
+        try { rsObj.setSupplementCategory(rs.getString("category")); } catch (Exception ignored) {}
+        try { rsObj.setSupplementImagePath(rs.getString("image_path")); } catch (Exception ignored) {}
+        return rsObj;
+    };
+
     // ── Diet Plan CRUD ─────────────────────────────────────────────
 
     public DietPlan save(DietPlan plan) {
+        if (plan.getId() != null) {
+            jdbcTemplate.update(
+                    "UPDATE diet_plans SET plan_name=?, member_id=?, goal=?, daily_calories=?, duration_weeks=?, protein_grams=?, carbs_grams=?, fat_grams=?, notes=?, status=? WHERE id=?",
+                    plan.getPlanName(), plan.getMemberId(), plan.getGoal(), plan.getDailyCalories(), plan.getDurationWeeks(), plan.getProteinGrams(), plan.getCarbsGrams(), plan.getFatGrams(), plan.getNotes(), plan.getStatus(), plan.getId()
+            );
+            jdbcTemplate.update("DELETE FROM diet_plan_meals WHERE diet_plan_id = ?", plan.getId());
+            saveMeals(plan.getId(), plan.getMeals());
+            jdbcTemplate.update("DELETE FROM diet_plan_supplements WHERE diet_plan_id = ?", plan.getId());
+            saveSupplements(plan.getId(), plan.getRecommendedSupplements());
+            return plan;
+        }
+
         KeyHolder kh = new GeneratedKeyHolder();
         jdbcTemplate.update(conn -> {
             PreparedStatement ps = conn.prepareStatement(
@@ -86,11 +111,32 @@ public class InstructorDietPlanRepository {
         }, kh);
         plan.setId(kh.getKey().longValue());
         saveMeals(plan.getId(), plan.getMeals());
+        saveSupplements(plan.getId(), plan.getRecommendedSupplements());
         return plan;
+    }
+
+    public DietPlan findById(Long id) {
+        String sql = "SELECT dp.*, " +
+                     "ins.name AS instructor_name, mem.name AS member_name " +
+                     "FROM diet_plans dp " +
+                     "LEFT JOIN users ins ON dp.instructor_id = ins.id " +
+                     "LEFT JOIN users mem ON dp.member_id = mem.id " +
+                     "WHERE dp.id = ?";
+        try {
+            DietPlan p = jdbcTemplate.queryForObject(sql, planMapper, id);
+            if (p != null) {
+                p.setMeals(findMealsByPlanId(p.getId()));
+                p.setRecommendedSupplements(findSupplementsByPlanId(p.getId()));
+            }
+            return p;
+        } catch (EmptyResultDataAccessException e) {
+            return null;
+        }
     }
 
     public void delete(Long id) {
         jdbcTemplate.update("DELETE FROM diet_plan_meals WHERE diet_plan_id = ?", id);
+        jdbcTemplate.update("DELETE FROM diet_plan_supplements WHERE diet_plan_id = ?", id);
         jdbcTemplate.update("DELETE FROM diet_plans WHERE id = ?", id);
     }
 
@@ -99,7 +145,10 @@ public class InstructorDietPlanRepository {
                      "LEFT JOIN users u ON dp.member_id = u.id " +
                      "WHERE dp.instructor_id = ? ORDER BY dp.created_at DESC";
         List<DietPlan> plans = jdbcTemplate.query(sql, planMapper, instructorId);
-        plans.forEach(p -> p.setMeals(findMealsByPlanId(p.getId())));
+        plans.forEach(p -> {
+            p.setMeals(findMealsByPlanId(p.getId()));
+            p.setRecommendedSupplements(findSupplementsByPlanId(p.getId()));
+        });
         return plans;
     }
 
@@ -108,7 +157,10 @@ public class InstructorDietPlanRepository {
                      "LEFT JOIN users u ON dp.instructor_id = u.id " +
                      "WHERE dp.member_id = ? ORDER BY dp.created_at DESC";
         List<DietPlan> plans = jdbcTemplate.query(sql, planMapper, memberId);
-        plans.forEach(p -> p.setMeals(findMealsByPlanId(p.getId())));
+        plans.forEach(p -> {
+            p.setMeals(findMealsByPlanId(p.getId()));
+            p.setRecommendedSupplements(findSupplementsByPlanId(p.getId()));
+        });
         return plans;
     }
 
@@ -120,7 +172,10 @@ public class InstructorDietPlanRepository {
                      "LEFT JOIN users mem ON dp.member_id = mem.id " +
                      "ORDER BY dp.created_at DESC";
         List<DietPlan> plans = jdbcTemplate.query(sql, planMapper);
-        plans.forEach(p -> p.setMeals(findMealsByPlanId(p.getId())));
+        plans.forEach(p -> {
+            p.setMeals(findMealsByPlanId(p.getId()));
+            p.setRecommendedSupplements(findSupplementsByPlanId(p.getId()));
+        });
         return plans;
     }
 
@@ -145,6 +200,22 @@ public class InstructorDietPlanRepository {
         return jdbcTemplate.query(
                 "SELECT * FROM diet_plan_meals WHERE diet_plan_id = ? ORDER BY id",
                 mealMapper, planId);
+    }
+
+    private void saveSupplements(Long planId, List<RecommendedSupplement> supplements) {
+        if (supplements == null || supplements.isEmpty()) return;
+        for (RecommendedSupplement s : supplements) {
+            jdbcTemplate.update(
+                    "INSERT INTO diet_plan_supplements (diet_plan_id, supplement_id, dosage_notes) VALUES (?, ?, ?)",
+                    planId, s.getSupplementId(), s.getDosageNotes());
+        }
+    }
+
+    public List<RecommendedSupplement> findSupplementsByPlanId(Long planId) {
+        String sql = "SELECT ds.*, s.name, s.category, s.image_path FROM diet_plan_supplements ds " +
+                     "LEFT JOIN supplements s ON ds.supplement_id = s.id " +
+                     "WHERE ds.diet_plan_id = ? ORDER BY ds.id";
+        return jdbcTemplate.query(sql, supplementMapper, planId);
     }
 
     // ── Helpers ────────────────────────────────────────────────────

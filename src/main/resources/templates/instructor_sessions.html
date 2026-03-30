@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Smart Fitness - Manage Sessions</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
+        body { font-family: 'Poppins', sans-serif; background: linear-gradient(to bottom right, #1a1c2e, #14162a); color: #fff; }
+        .glass-effect { background: rgba(255, 255, 255, 0.05); backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.1); }
+        .sidebar-link.active { background: linear-gradient(to right, #7c3aed, #2563eb); }
+        .sidebar-link:not(.active):hover { background: rgba(255, 255, 255, 0.1); }
+        .form-input { background: rgba(255, 255, 255, 0.07); border: 1px solid rgba(255, 255, 255, 0.12); color: #fff; transition: border-color 0.2s ease, box-shadow 0.2s ease; }
+        .form-input:focus { outline: none; border-color: #7c3aed; box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.2); }
+        .form-input option { background: #1a1c2e; color: #fff; }
+    </style>
+</head>
+<body>
+<div class="flex h-screen overflow-hidden">
+    <!-- Sidebar -->
+    <aside class="hidden lg:flex flex-col w-64 h-screen glass-effect flex-shrink-0">
+        <div class="p-6">
+            <a href="#" class="flex items-center gap-3">
+                <div class="bg-gradient-to-r from-purple-500 to-blue-500 p-2.5 rounded-lg">
+                    <i class="fas fa-dumbbell text-white"></i>
+                </div>
+                <h1 class="text-2xl font-bold bg-gradient-to-r from-blue-400 via-purple-400 to-pink-400 bg-clip-text text-transparent">Smart Fitness</h1>
+            </a>
+        </div>
+        <div class="px-4 mb-4"><span class="text-xs font-semibold uppercase tracking-widest text-gray-500">Instructor Panel</span></div>
+        <nav class="flex-1 px-4 space-y-2 overflow-y-auto">
+            <a href="/instructor/dashboard" class="sidebar-link flex items-center gap-3 px-4 py-3 rounded-xl text-gray-300 transition-all duration-300"><i class="fas fa-th-large w-4 text-center"></i><span class="font-medium">Dashboard</span></a>
+            <a href="/instructor/sessions" class="sidebar-link active flex items-center gap-3 px-4 py-3 rounded-xl text-white transition-all duration-300"><i class="fas fa-calendar-alt w-4 text-center"></i><span class="font-medium">Schedule Sessions</span></a>
+            <a href="/instructor/progress" class="sidebar-link flex items-center gap-3 px-4 py-3 rounded-xl text-gray-300 transition-all duration-300"><i class="fas fa-chart-line w-4 text-center"></i><span class="font-medium">Track Progress</span></a>
+            <a href="/instructor/create-diet-plan" class="sidebar-link flex items-center gap-3 px-4 py-3 rounded-xl text-gray-300 transition-all duration-300"><i class="fas fa-apple-alt w-4 text-center"></i><span class="font-medium">Create Diet Plan</span></a>
+            <a href="/instructor/create-workout" class="sidebar-link flex items-center gap-3 px-4 py-3 rounded-xl text-gray-300 transition-all duration-300"><i class="fas fa-running w-4 text-center"></i><span class="font-medium">Create Workout</span></a>
+            <a href="/instructor/members" class="sidebar-link flex items-center gap-3 px-4 py-3 rounded-xl text-gray-300 transition-all duration-300"><i class="fas fa-users w-4 text-center"></i><span class="font-medium">My Members</span></a>
+        </nav>
+        <div class="p-4 border-t border-white/10">
+            <a href="/logout"><button class="w-full mt-2 bg-white/10 hover:bg-white/20 text-white rounded-xl p-2.5 flex items-center justify-center gap-2 transition-all duration-300"><i class="fas fa-sign-out-alt"></i><span>Log Out</span></button></a>
+        </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="flex-1 overflow-y-auto p-6">
+        <div class="max-w-7xl mx-auto">
+            <header class="mb-8">
+                <h1 class="text-3xl font-bold bg-gradient-to-r from-blue-400 via-purple-400 to-pink-400 bg-clip-text text-transparent">Manage Training Sessions</h1>
+                <p class="text-gray-400 mt-2">Create and monitor your 1-on-1 and group class schedules.</p>
+            </header>
+
+            <div th:if="${success}" class="bg-green-500/20 text-green-300 px-4 py-3 rounded-lg mb-6 flex items-center">
+                <i class="fas fa-check-circle mr-2"></i><span th:text="${success}"></span>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                <!-- Create Session Form -->
+                <div class="lg:col-span-1">
+                    <div class="glass-effect rounded-xl p-6">
+                        <h2 class="text-lg font-semibold mb-4 text-white"><i class="fas fa-calendar-plus text-blue-400 mr-2"></i> Create Session</h2>
+                        <form th:action="@{/instructor/sessions/create}" method="post">
+                            <div class="space-y-4">
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-300 mb-1">Title</label>
+                                    <input type="text" name="title" placeholder="e.g. HIIT Morning Class" class="form-input w-full rounded-xl px-4 py-2 text-sm" required>
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-300 mb-1">Description</label>
+                                    <textarea name="description" rows="2" class="form-input w-full rounded-xl px-4 py-2 text-sm resize-none"></textarea>
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-300 mb-1">Session Type</label>
+                                    <select name="sessionType" class="form-input w-full rounded-xl px-4 py-2 text-sm" required>
+                                        <option value="1ON1">1-on-1 Personal Training</option>
+                                        <option value="GROUP">Group Class</option>
+                                    </select>
+                                </div>
+                                <div class="grid grid-cols-2 gap-3">
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-300 mb-1">Start Time</label>
+                                        <input type="datetime-local" name="startTime" class="form-input w-full rounded-xl px-3 py-2 text-sm" required>
+                                    </div>
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-300 mb-1">End Time</label>
+                                        <input type="datetime-local" name="endTime" class="form-input w-full rounded-xl px-3 py-2 text-sm" required>
+                                    </div>
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-300 mb-1">Capacity</label>
+                                    <input type="number" name="capacity" min="1" max="50" value="1" class="form-input w-full rounded-xl px-4 py-2 text-sm" required>
+                                </div>
+                                <button type="submit" class="w-full mt-4 bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white rounded-xl px-4 py-3 font-medium transition-all duration-300 shadow-lg shadow-blue-500/30">
+                                    Publish Schedule
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- Session List -->
+                <div class="lg:col-span-2 space-y-4">
+                    <h2 class="text-xl font-semibold mb-4 text-white"><i class="fas fa-list text-purple-400 mr-2"></i> Your Scheduled Sessions</h2>
+                    
+                    <div th:if="${#lists.isEmpty(sessions)}" class="glass-effect rounded-xl p-8 text-center text-gray-400 text-sm">
+                        You have not scheduled any upcoming sessions yet. Add one from the panel.
+                    </div>
+
+                    <div th:each="sess : ${sessions}" class="glass-effect rounded-xl p-5 border-l-4 border-blue-500 relative">
+                        <div class="absolute top-4 right-4">
+                            <form th:action="@{/instructor/sessions/delete}" method="post">
+                                <input type="hidden" name="id" th:value="${sess.id}">
+                                <button type="submit" class="text-gray-500 hover:text-red-400 transition-colors" title="Delete Session"><i class="fas fa-trash"></i></button>
+                            </form>
+                        </div>
+                        <h3 class="font-semibold text-lg text-white mb-1">
+                            <span th:text="${sess.title}">Title</span>
+                            <span class="ml-2 text-[10px] px-2 py-0.5 rounded-full uppercase bg-blue-500/20 text-blue-400 align-middle" th:text="${sess.sessionType}">GROUP</span>
+                        </h3>
+                        <p class="text-xs text-gray-400 mb-3"><i class="fas fa-clock mr-1"></i> <span th:text="${#temporals.format(sess.startTime, 'MMM dd, yyyy hh:mm a')}"></span> - <span th:text="${#temporals.format(sess.endTime, 'hh:mm a')}"></span></p>
+                        <p class="text-sm text-gray-300 mb-4" th:text="${sess.description}">Description</p>
+                        
+                        <!-- Enrollment Bar -->
+                        <div class="mt-4">
+                            <div class="flex justify-between items-end mb-1">
+                                <span class="text-xs text-gray-400 uppercase tracking-wider font-semibold">Capacity Booked</span>
+                                <span class="text-xs font-bold text-white"><span th:text="${sess.currentBookings}">0</span> / <span th:text="${sess.capacity}">1</span></span>
+                            </div>
+                            <div class="w-full bg-gray-800 rounded-full h-2 rounded-full overflow-hidden">
+                                <div class="bg-gradient-to-r from-blue-400 to-indigo-500 h-2 rounded-full" th:style="'width: ' + (${sess.currentBookings * 100} / ${sess.capacity}) + '%'"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </main>
+</div>
+</body>
+</html>

@@ -188,6 +188,7 @@ public class AuthController {
             switch (user.getRole()) {
                 case "ADMIN"       -> redirectUrl = "/admin/dashboard";
                 case "INSTRUCTOR"  -> redirectUrl = "/instructor/dashboard";
+                case "DIETITIAN"   -> redirectUrl = "/dietitian/dashboard";
                 default            -> redirectUrl = "/user/dashboard";
             }
             response.put("redirect", redirectUrl);

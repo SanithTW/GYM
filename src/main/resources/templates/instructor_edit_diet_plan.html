@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Smart Fitness - Create Diet Plan</title>
+    <title>Smart Fitness - Edit Diet Plan</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
@@ -88,7 +88,7 @@
                 <i class="fas fa-th-large w-4 text-center"></i>
                 <span class="font-medium">Dashboard</span>
             </a>
-            <a href="/instructor/create-diet-plan" class="sidebar-link active flex items-center gap-3 px-4 py-3 rounded-xl text-white transition-all duration-300">
+            <a href="/instructor/create-diet-plan" class="sidebar-link flex items-center gap-3 px-4 py-3 rounded-xl text-white transition-all duration-300">
                 <i class="fas fa-apple-alt w-4 text-center"></i>
                 <span class="font-medium">Create Diet Plan</span>
             </a>
@@ -100,7 +100,7 @@
                 <i class="fas fa-users w-4 text-center"></i>
                 <span class="font-medium">My Members</span>
             </a>
-            <a href="/instructor/diet-plans" class="sidebar-link flex items-center gap-3 px-4 py-3 rounded-xl text-gray-300 transition-all duration-300">
+            <a href="/instructor/diet-plans" class="sidebar-link active flex items-center gap-3 px-4 py-3 rounded-xl text-gray-300 transition-all duration-300">
                 <i class="fas fa-clipboard-list w-4 text-center"></i>
                 <span class="font-medium">My Diet Plans</span>
             </a>
@@ -144,15 +144,16 @@
             <!-- Header -->
             <header class="mb-8">
                 <div class="flex items-center gap-3 mb-1">
-                    <a href="/instructor/dashboard" class="text-gray-400 hover:text-white transition-colors duration-200">
+                    <a href="/instructor/diet-plans" class="text-gray-400 hover:text-white transition-colors duration-200">
                         <i class="fas fa-arrow-left"></i>
                     </a>
-                    <h1 class="text-3xl font-bold bg-gradient-to-r from-blue-400 via-purple-400 to-pink-400 bg-clip-text text-transparent">Create Diet Plan</h1>
+                    <h1 class="text-3xl font-bold bg-gradient-to-r from-blue-400 via-purple-400 to-pink-400 bg-clip-text text-transparent">Edit Diet Plan</h1>
                 </div>
-                <p class="text-gray-400 mt-1 ml-7">Design a personalised nutrition plan for your member</p>
+                <p class="text-gray-400 mt-1 ml-7">Update the personalised nutrition plan for your member</p>
             </header>
 
-            <form th:action="@{/instructor/create-diet-plan}" method="post" th:object="${dietPlan}">
+            <form th:action="@{/instructor/edit-diet-plan}" method="post" th:object="${dietPlan}">
+                <input type="hidden" name="id" th:field="*{id}" />
 
                 <!-- Plan Details -->
                 <div class="glass-effect rounded-xl p-6 mb-6">
@@ -281,14 +282,14 @@
 
                 <!-- Submit -->
                 <div class="flex items-center justify-end gap-4">
-                    <a href="/instructor/dashboard"
+                    <a href="/instructor/diet-plans"
                        class="px-6 py-3 rounded-xl text-gray-300 hover:text-white border border-white/10 hover:border-white/30 transition-all duration-200 text-sm font-medium">
                         Cancel
                     </a>
                     <button type="submit"
-                            class="px-8 py-3 rounded-xl bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-400 hover:to-emerald-500 text-white font-semibold text-sm transition-all duration-200 flex items-center gap-2">
+                            class="px-8 py-3 rounded-xl bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-400 hover:to-blue-500 text-white font-semibold text-sm transition-all duration-200 flex items-center gap-2">
                         <i class="fas fa-save"></i>
-                        Save Diet Plan
+                        Update Diet Plan
                     </button>
                 </div>
 
@@ -297,7 +298,7 @@
     </main>
 </div>
 
-<script>
+<script th:inline="javascript">
     const mealTypes = ['Breakfast', 'Morning Snack', 'Lunch', 'Afternoon Snack', 'Dinner', 'Evening Snack'];
     let mealCount = 0;
 
@@ -322,7 +323,7 @@
             <div class="flex gap-2 items-end">
                 <div class="flex-1">
                     <label class="block text-xs font-medium text-gray-400 mb-1">Calories</label>
-                    <input type="number" name="meals[${idx}].calories" value="${calories}"
+                    <input type="number" name="meals[${idx}].calories" value="${calories !== null && calories !== undefined ? calories : ''}"
                            placeholder="kcal"
                            class="form-input w-full rounded-xl px-3 py-2 text-sm">
                 </div>
@@ -344,7 +345,7 @@
         /*[/]*/
     ];
 
-    function addSupplement() {
+    function addSupplement(supplementId = '', dosageNotes = '') {
         const container = document.getElementById('supplementContainer');
         const idx = supplementCount++;
         const row = document.createElement('div');
@@ -353,7 +354,8 @@
         let selectOptions = '<option value="">-- Select Supplement --</option>';
         availableSupplements.forEach(sup => {
             if (sup.id !== null && sup.id !== 0) {
-                 selectOptions += `<option value="${sup.id}">${sup.name}</option>`;
+                 const isSelected = (String(sup.id) === String(supplementId)) ? 'selected' : '';
+                 selectOptions += `<option value="${sup.id}" ${isSelected}>${sup.name}</option>`;
             }
         });
 
@@ -367,7 +369,7 @@
             <div class="md:col-span-2 flex gap-2 items-end">
                 <div class="flex-1">
                     <label class="block text-xs font-medium text-gray-400 mb-1">Dosage / Notes</label>
-                    <input type="text" name="supplements[${idx}].dosageNotes"
+                    <input type="text" name="supplements[${idx}].dosageNotes" value="${dosageNotes}"
                            placeholder="e.g. 1 scoop post workout"
                            class="form-input w-full rounded-xl px-3 py-2 text-sm" required>
                 </div>
@@ -380,10 +382,26 @@
         container.appendChild(row);
     }
 
-    // Pre-populate with 3 default meals
-    addMeal('Breakfast');
-    addMeal('Lunch');
-    addMeal('Dinner');
+    /*<![CDATA[*/
+    var existingMeals = /*[[${dietPlan.meals}]]*/ [];
+    if (existingMeals && existingMeals.length > 0) {
+        existingMeals.forEach(function(meal) {
+            addMeal(meal.mealType, meal.foodItems, meal.calories);
+        });
+    } else {
+        // Fallback
+        addMeal('Breakfast');
+        addMeal('Lunch');
+        addMeal('Dinner');
+    }
+
+    var existingSupplements = /*[[${dietPlan.recommendedSupplements}]]*/ [];
+    if (existingSupplements && existingSupplements.length > 0) {
+        existingSupplements.forEach(function(sup) {
+            addSupplement(sup.supplementId, sup.dosageNotes);
+        });
+    }
+    /*]]>*/
 </script>
 </body>
 </html>

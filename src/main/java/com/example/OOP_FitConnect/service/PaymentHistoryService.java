@@ -51,6 +51,10 @@ public class PaymentHistoryService {
         return dbController.savePayment(payment);
     }
 
+    public void updatePaymentStatus(int paymentId, String status) {
+        dbController.updatePaymentStatus(paymentId, status);
+    }
+
     public double getTotalRevenue() {
         return dbController.getTotalRevenue();
     }

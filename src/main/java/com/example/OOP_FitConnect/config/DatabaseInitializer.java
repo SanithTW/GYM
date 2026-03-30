@@ -92,6 +92,16 @@ public class DatabaseInitializer implements CommandLineRunner {
                         )
                     """);
 
+            // Diet Plan Supplements
+            jdbcTemplate.execute("""
+                        CREATE TABLE IF NOT EXISTS diet_plan_supplements (
+                            id BIGINT AUTO_INCREMENT PRIMARY KEY,
+                            diet_plan_id BIGINT NOT NULL,
+                            supplement_id BIGINT NOT NULL,
+                            dosage_notes VARCHAR(255)
+                        )
+                    """);
+
             // Workout Programs
             jdbcTemplate.execute("""
                         CREATE TABLE IF NOT EXISTS workout_programs (
@@ -143,6 +153,48 @@ public class DatabaseInitializer implements CommandLineRunner {
                             posted_by VARCHAR(100),
                             created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
                             active BOOLEAN DEFAULT TRUE
+                        )
+                    """);
+
+            // Training Sessions (Classes & 1-on-1)
+            jdbcTemplate.execute("""
+                        CREATE TABLE IF NOT EXISTS training_sessions (
+                            id BIGINT AUTO_INCREMENT PRIMARY KEY,
+                            instructor_id INT NOT NULL,
+                            title VARCHAR(255) NOT NULL,
+                            description TEXT,
+                            session_type VARCHAR(20) DEFAULT 'GROUP', -- GROUP or 1ON1
+                            start_time DATETIME NOT NULL,
+                            end_time DATETIME NOT NULL,
+                            capacity INT DEFAULT 1,
+                            status VARCHAR(20) DEFAULT 'SCHEDULED', -- SCHEDULED, CANCELLED, COMPLETED
+                            created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+                        )
+                    """);
+
+            // Session Bookings
+            jdbcTemplate.execute("""
+                        CREATE TABLE IF NOT EXISTS session_bookings (
+                            id BIGINT AUTO_INCREMENT PRIMARY KEY,
+                            session_id BIGINT NOT NULL,
+                            member_id INT NOT NULL,
+                            status VARCHAR(20) DEFAULT 'BOOKED', -- BOOKED, CANCELLED, ATTENDED
+                            booking_date DATETIME DEFAULT CURRENT_TIMESTAMP
+                        )
+                    """);
+
+            // Member Progress Tracking
+            jdbcTemplate.execute("""
+                        CREATE TABLE IF NOT EXISTS member_progress (
+                            id BIGINT AUTO_INCREMENT PRIMARY KEY,
+                            member_id INT NOT NULL,
+                            instructor_id INT NOT NULL,
+                            log_date DATE NOT NULL,
+                            weight DOUBLE,
+                            body_fat_percentage DOUBLE,
+                            muscle_mass DOUBLE,
+                            notes TEXT,
+                            created_at DATETIME DEFAULT CURRENT_TIMESTAMP
                         )
                     """);
 

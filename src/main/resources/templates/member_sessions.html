@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Smart Fitness - Training Sessions</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
+        body { font-family: 'Poppins', sans-serif; background: linear-gradient(to bottom right, #1a1c2e, #14162a); color: #fff; }
+        .glass-effect { background: rgba(255, 255, 255, 0.05); backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.1); }
+        .scale-hover:hover { transform: scale(1.02); transition: transform 0.3s ease; }
+    </style>
+</head>
+<body>
+<div class="flex h-screen overflow-hidden">
+    <!-- Sidebar Navigation -->
+    <aside class="hidden lg:flex flex-col w-64 h-screen glass-effect">
+        <div class="p-6">
+            <a href="#" class="flex items-center gap-3">
+                <div class="bg-gradient-to-r from-purple-500 to-blue-500 p-2.5 rounded-lg">
+                    <i class="fas fa-dumbbell text-white"></i>
+                </div>
+                <h1 class="text-2xl font-bold bg-gradient-to-r from-blue-400 via-purple-400 to-pink-400 bg-clip-text text-transparent">Smart Fitness</h1>
+            </a>
+        </div>
+        <nav class="flex-1 p-4 space-y-2">
+            <a href="/user/dashboard" class="flex items-center gap-3 px-4 py-3 rounded-xl text-gray-300 hover:bg-white/10 transition-all duration-300">
+                <i class="fas fa-th-large"></i>
+                <span class="font-medium">Dashboard</span>
+            </a>
+            <a href="/member/sessions" class="flex items-center gap-3 px-4 py-3 rounded-xl bg-gradient-to-r from-purple-600 to-blue-600 text-white">
+                <i class="fas fa-calendar-check"></i>
+                <span class="font-medium">Live Sessions</span>
+            </a>
+            <a href="/member/progress" class="flex items-center gap-3 px-4 py-3 rounded-xl text-gray-300 hover:bg-white/10 transition-all duration-300">
+                <i class="fas fa-chart-line"></i>
+                <span class="font-medium">My Progress</span>
+            </a>
+            <a href="/user/schedule" class="flex items-center gap-3 px-4 py-3 rounded-xl text-gray-300 hover:bg-white/10 transition-all duration-300">
+                <i class="fas fa-calendar"></i>
+                <span class="font-medium">Schedule</span>
+            </a>
+            <a href="/diet-plan" class="flex items-center gap-3 px-4 py-3 rounded-xl text-gray-300 hover:bg-white/10 transition-all duration-300">
+                <i class="fas fa-apple-alt"></i>
+                <span class="font-medium">Diet Plan</span>
+            </a>
+        </nav>
+        <div class="p-4 border-t border-white/10">
+            <a href="/logout">
+                <button class="w-full mt-2 bg-white/10 hover:bg-white/20 text-white rounded-xl p-2.5 flex items-center justify-center gap-2">
+                    <i class="fas fa-sign-out-alt"></i>
+                    <span>Log Out</span>
+                </button>
+            </a>
+        </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="flex-1 overflow-y-auto p-6">
+        <div class="max-w-7xl mx-auto">
+            <header class="mb-8">
+                <h1 class="text-3xl font-bold bg-gradient-to-r from-blue-400 via-purple-400 to-pink-400 bg-clip-text text-transparent">Live Training Sessions</h1>
+                <p class="text-gray-400 mt-2">Book 1-on-1 coaching or group classes.</p>
+            </header>
+
+            <div th:if="${success}" class="bg-green-500/20 text-green-300 px-4 py-3 rounded-lg mb-6 flex items-center">
+                <i class="fas fa-check-circle mr-2"></i><span th:text="${success}"></span>
+            </div>
+            <div th:if="${error}" class="bg-red-500/20 text-red-300 px-4 py-3 rounded-lg mb-6 flex items-center">
+                <i class="fas fa-times-circle mr-2"></i><span th:text="${error}"></span>
+            </div>
+
+            <!-- My Bookings -->
+            <div class="glass-effect rounded-xl p-6 mb-8">
+                <h2 class="text-xl font-semibold mb-4 flex items-center gap-2 text-white">
+                    <i class="fas fa-calendar-check text-green-400"></i> My Bookings
+                </h2>
+                <div th:if="${#lists.isEmpty(myBookings)}" class="text-center py-6 text-gray-400">
+                    <p>You have no upcoming booked sessions.</p>
+                </div>
+                <div th:unless="${#lists.isEmpty(myBookings)}" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    <div th:each="session : ${myBookings}" class="bg-white/5 p-5 rounded-xl border border-white/10">
+                        <div class="flex justify-between items-start mb-2">
+                            <h3 class="font-semibold text-lg text-blue-300" th:text="${session.title}">Title</h3>
+                            <span class="text-[10px] px-2 py-1 rounded-full uppercase bg-blue-500/20 text-blue-400" th:text="${session.sessionType}">GROUP</span>
+                        </div>
+                        <p class="text-sm text-gray-400 mb-3" th:text="${session.description}"></p>
+                        <div class="space-y-1 mb-4">
+                            <p class="text-sm"><i class="fas fa-user-circle text-gray-500 w-5"></i> <span th:text="${session.instructorName}"></span></p>
+                            <p class="text-sm"><i class="fas fa-clock text-gray-500 w-5"></i> <span th:text="${#temporals.format(session.startTime, 'MMM dd, hh:mm a')}"></span></p>
+                        </div>
+                        <form th:action="@{/member/sessions/cancel}" method="post">
+                            <input type="hidden" name="sessionId" th:value="${session.id}">
+                            <button type="submit" class="w-full py-2 bg-red-500/20 hover:bg-red-500/30 text-red-400 rounded-lg text-sm transition-colors border border-red-500/30">
+                                Cancel Booking
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Available Sessions -->
+            <div class="glass-effect rounded-xl p-6 mb-8">
+                <h2 class="text-xl font-semibold mb-4 flex items-center gap-2 text-white">
+                    <i class="fas fa-calendar-plus text-blue-400"></i> Available Sessions
+                </h2>
+                <div th:if="${#lists.isEmpty(upcomingSessions)}" class="text-center py-6 text-gray-400">
+                    <p>No upcoming sessions available right now.</p>
+                </div>
+                <div th:unless="${#lists.isEmpty(upcomingSessions)}" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    <!-- Loop through all upcoming that are NOT already booked by user -->
+                    <div th:each="session : ${upcomingSessions}" th:if="${!session.bookedByCurrentUser}" class="bg-white/5 p-5 rounded-xl border border-white/10">
+                        <div class="flex justify-between items-start mb-2">
+                            <h3 class="font-semibold text-lg text-blue-300" th:text="${session.title}">Title</h3>
+                            <span class="text-[10px] px-2 py-1 rounded-full uppercase bg-blue-500/20 text-blue-400" th:text="${session.sessionType}">GROUP</span>
+                        </div>
+                        <p class="text-sm text-gray-400 mb-3" th:text="${session.description}"></p>
+                        <div class="space-y-1 mb-4">
+                            <p class="text-sm"><i class="fas fa-user-circle text-gray-500 w-5"></i> <span th:text="${session.instructorName}"></span></p>
+                            <p class="text-sm"><i class="fas fa-clock text-gray-500 w-5"></i> <span th:text="${#temporals.format(session.startTime, 'MMM dd, hh:mm a')}"></span></p>
+                            <p class="text-sm"><i class="fas fa-users text-gray-500 w-5"></i> <span th:text="${session.currentBookings}">0</span> / <span th:text="${session.capacity}">1</span> Booked</p>
+                        </div>
+                        
+                        <form th:if="${session.currentBookings < session.capacity}" th:action="@{/member/sessions/book}" method="post">
+                            <input type="hidden" name="sessionId" th:value="${session.id}">
+                            <button type="submit" class="w-full py-2 bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white rounded-lg text-sm transition-colors">
+                                Book Now
+                            </button>
+                        </form>
+                        <button th:if="${session.currentBookings >= session.capacity}" disabled class="w-full py-2 bg-gray-700 text-gray-400 rounded-lg text-sm cursor-not-allowed">
+                            Full
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </main>
+</div>
+</body>
+</html>

@@ -6,9 +6,15 @@ import com.example.OOP_FitConnect.model.User;
 import com.example.OOP_FitConnect.model.WorkoutDay;
 import com.example.OOP_FitConnect.model.WorkoutExercise;
 import com.example.OOP_FitConnect.model.WorkoutProgram;
+import com.example.OOP_FitConnect.model.RecommendedSupplement;
+import com.example.OOP_FitConnect.model.TrainingSession;
+import com.example.OOP_FitConnect.model.MemberProgress;
 import com.example.OOP_FitConnect.service.GuestService;
 import com.example.OOP_FitConnect.service.InstructorDietPlanService;
 import com.example.OOP_FitConnect.service.InstructorWorkoutService;
+import com.example.OOP_FitConnect.service.SupplementService;
+import com.example.OOP_FitConnect.service.TrainingSessionService;
+import com.example.OOP_FitConnect.service.MemberProgressService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,11 +24,12 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
+
 
 @Controller
 @RequestMapping("/instructor")
@@ -36,6 +43,15 @@ public class InstructorController {
 
     @Autowired
     private InstructorWorkoutService workoutService;
+
+    @Autowired
+    private SupplementService supplementService;
+
+    @Autowired
+    private TrainingSessionService trainingService;
+
+    @Autowired
+    private MemberProgressService progressService;
 
     // ── Auth guard helper ──────────────────────────────────────────
 
@@ -79,6 +95,7 @@ public class InstructorController {
         model.addAttribute("instructor", instructor);
         model.addAttribute("dietPlan", new DietPlan());
         model.addAttribute("members", guestService.getAllMembers());
+        model.addAttribute("allSupplements", supplementService.getAllSupplements());
         return "instructor_create_diet_plan";
     }
 
@@ -118,9 +135,95 @@ public class InstructorController {
         }
         plan.setMeals(meals);
 
+        List<RecommendedSupplement> supplements = new ArrayList<>();
+        for (int i = 0; ; i++) {
+            String suppIdStr = request.getParameter("supplements[" + i + "].supplementId");
+            if (suppIdStr == null) break;
+            if (suppIdStr.isBlank()) continue;
+            RecommendedSupplement rsObj = new RecommendedSupplement();
+            rsObj.setSupplementId(Long.parseLong(suppIdStr));
+            rsObj.setDosageNotes(request.getParameter("supplements[" + i + "].dosageNotes"));
+            supplements.add(rsObj);
+        }
+        plan.setRecommendedSupplements(supplements);
+
         dietPlanService.createPlan(plan);
         redirectAttributes.addFlashAttribute("success", "Diet plan saved successfully!");
         return "redirect:/instructor/dashboard";
+    }
+
+    // ── Edit Diet Plan ───────────────────────────────────────────
+
+    @GetMapping("/edit-diet-plan")
+    public String editDietPlanForm(HttpServletRequest request, @RequestParam Long id, Model model) {
+        User instructor = getInstructor(request);
+        if (instructor == null) return "redirect:/login";
+
+        DietPlan plan = dietPlanService.getPlanById(id);
+        if (plan == null || plan.getInstructorId() != instructor.getId()) {
+            return "redirect:/instructor/diet-plans";
+        }
+
+        model.addAttribute("instructor", instructor);
+        model.addAttribute("dietPlan", plan);
+        model.addAttribute("members", guestService.getAllMembers());
+        model.addAttribute("allSupplements", supplementService.getAllSupplements());
+        return "instructor_edit_diet_plan";
+    }
+
+    @PostMapping("/edit-diet-plan")
+    public String updateDietPlan(HttpServletRequest request, RedirectAttributes redirectAttributes) {
+        User instructor = getInstructor(request);
+        if (instructor == null) return "redirect:/login";
+
+        String idStr = param(request, "id", null);
+        if (idStr == null || idStr.isBlank()) return "redirect:/instructor/diet-plans";
+        
+        DietPlan plan = dietPlanService.getPlanById(Long.parseLong(idStr));
+        if (plan == null || plan.getInstructorId() != instructor.getId()) return "redirect:/instructor/diet-plans";
+
+        plan.setPlanName(param(request, "planName", "Untitled Plan"));
+        plan.setGoal(param(request, "goal", null));
+        plan.setNotes(param(request, "notes", null));
+
+        String memberIdStr = param(request, "memberId", null);
+        if (memberIdStr != null && !memberIdStr.isBlank()) {
+            try { plan.setMemberId(Integer.parseInt(memberIdStr)); } catch (NumberFormatException ignored) {}
+        }
+
+        plan.setDailyCalories(parseNullableInt(param(request, "dailyCalories", null)));
+        plan.setDurationWeeks(parseNullableInt(param(request, "durationWeeks", null)));
+        plan.setProteinGrams(parseNullableInt(param(request, "proteinGrams", null)));
+        plan.setCarbsGrams(parseNullableInt(param(request, "carbsGrams", null)));
+        plan.setFatGrams(parseNullableInt(param(request, "fatGrams", null)));
+
+        List<Meal> meals = new ArrayList<>();
+        for (int i = 0; ; i++) {
+            String mealType = request.getParameter("meals[" + i + "].mealType");
+            if (mealType == null) break;
+            Meal meal = new Meal();
+            meal.setMealType(mealType);
+            meal.setFoodItems(request.getParameter("meals[" + i + "].foodItems"));
+            meal.setCalories(parseNullableInt(request.getParameter("meals[" + i + "].calories")));
+            meals.add(meal);
+        }
+        plan.setMeals(meals);
+
+        List<RecommendedSupplement> supplements = new ArrayList<>();
+        for (int i = 0; ; i++) {
+            String suppIdStr = request.getParameter("supplements[" + i + "].supplementId");
+            if (suppIdStr == null) break;
+            if (suppIdStr.isBlank()) continue;
+            RecommendedSupplement rsObj = new RecommendedSupplement();
+            rsObj.setSupplementId(Long.parseLong(suppIdStr));
+            rsObj.setDosageNotes(request.getParameter("supplements[" + i + "].dosageNotes"));
+            supplements.add(rsObj);
+        }
+        plan.setRecommendedSupplements(supplements);
+
+        dietPlanService.createPlan(plan); // this will update due to our modified save()
+        redirectAttributes.addFlashAttribute("success", "Diet plan updated successfully!");
+        return "redirect:/instructor/diet-plans";
     }
 
     // ── Create Workout Program ─────────────────────────────────────
@@ -284,5 +387,70 @@ public class InstructorController {
 
     private <T> List<T> limitList(List<T> list, int max) {
         return list.size() <= max ? list : list.subList(0, max);
+    }
+
+    // ── Training Sessions ──────────────────────────────────────────
+
+    @GetMapping("/sessions")
+    public String manageSessions(HttpServletRequest request, Model model) {
+        User instructor = getInstructor(request);
+        if (instructor == null) return "redirect:/login";
+
+        List<TrainingSession> sessions = trainingService.getSessionsByInstructor(instructor.getId());
+        model.addAttribute("instructor", instructor);
+        model.addAttribute("sessions", sessions);
+        return "instructor_sessions";
+    }
+
+    @PostMapping("/sessions/create")
+    public String createSession(@ModelAttribute TrainingSession session, HttpServletRequest request, RedirectAttributes redirectAttributes) {
+        User instructor = getInstructor(request);
+        if (instructor == null) return "redirect:/login";
+
+        session.setInstructorId(instructor.getId());
+        session.setStatus("SCHEDULED");
+        trainingService.createSession(session);
+        redirectAttributes.addFlashAttribute("success", "Training session created successfully!");
+        return "redirect:/instructor/sessions";
+    }
+
+    @PostMapping("/sessions/delete")
+    public String deleteSession(@RequestParam("id") Long id, HttpServletRequest request, RedirectAttributes redirectAttributes) {
+        User instructor = getInstructor(request);
+        if (instructor == null) return "redirect:/login";
+
+        trainingService.deleteSession(id);
+        redirectAttributes.addFlashAttribute("success", "Session deleted.");
+        return "redirect:/instructor/sessions";
+    }
+
+    // ── Member Progress ────────────────────────────────────────────
+
+    @GetMapping("/progress")
+    public String trackProgress(HttpServletRequest request, @RequestParam(value = "memberId", required = false) Integer memberId, Model model) {
+        User instructor = getInstructor(request);
+        if (instructor == null) return "redirect:/login";
+
+        model.addAttribute("instructor", instructor);
+        model.addAttribute("members", guestService.getAllMembers());
+
+        if (memberId != null) {
+            List<MemberProgress> progressLogs = progressService.getProgressForMember(memberId);
+            model.addAttribute("selectedMemberId", memberId);
+            model.addAttribute("progressLogs", progressLogs);
+        }
+
+        return "instructor_progress";
+    }
+
+    @PostMapping("/progress/add")
+    public String addProgress(@ModelAttribute MemberProgress progress, HttpServletRequest request, RedirectAttributes redirectAttributes) {
+        User instructor = getInstructor(request);
+        if (instructor == null) return "redirect:/login";
+
+        progress.setInstructorId(instructor.getId());
+        progressService.logProgress(progress);
+        redirectAttributes.addFlashAttribute("success", "Progress logged successfully!");
+        return "redirect:/instructor/progress?memberId=" + progress.getMemberId();
     }
 }

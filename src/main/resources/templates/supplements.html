@@ -625,6 +625,17 @@
     </header>
     <main>
         <h1>Supplements</h1>
+        
+        <!-- Search Bar Container -->
+        <div class="search-container" style="text-align: center; margin: 20px auto 40px; position: relative; max-width: 600px; width: 90%;">
+            <input type="text" id="supplementSearch" placeholder="Search for supplements, categories, or benefits..."
+                   style="width: 100%; padding: 15px 45px 15px 20px; border-radius: 30px; border: 2px solid rgba(255, 255, 255, 0.2); 
+                          background: rgba(255, 255, 255, 0.1); color: white; font-size: 16px; outline: none; 
+                          backdrop-filter: blur(10px); box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5); 
+                          transition: border-color 0.3s, box-shadow 0.3s;">
+            <i class="fas fa-search" style="position: absolute; right: 20px; top: 50%; transform: translateY(-50%); color: #aaa; font-size: 18px;"></i>
+        </div>
+        
         <br><br>
 
         <!-- Dynamic Supplements Section -->
@@ -1257,6 +1268,62 @@
             details.style.display = details.style.display === "none" || details.style.display === "" ? "block" : "none";
         }
 
+        // Live Search / Filtering Logic
+        document.addEventListener('DOMContentLoaded', () => {
+            const searchInput = document.getElementById('supplementSearch');
+            
+            if (searchInput) {
+                searchInput.addEventListener('input', function() {
+                    const searchTerm = this.value.toLowerCase().trim();
+                    const sections = ['protein-section', 'pre-workout-section', 'Mass-gain-section', 'Ceratine-section', 'Foods-section', 'Drinks-section'];
+                    
+                    // Filter cards
+                    const allCards = document.querySelectorAll('.food-card');
+                    allCards.forEach(card => {
+                        const title = card.querySelector('h2');
+                        const descriptionLines = card.querySelectorAll('p, li');
+                        
+                        let textToSearch = title ? title.textContent.toLowerCase() : '';
+                        descriptionLines.forEach(desc => {
+                            textToSearch += ' ' + desc.textContent.toLowerCase();
+                        });
+
+                        if (searchTerm === '' || textToSearch.includes(searchTerm)) {
+                            card.style.display = 'block';
+                        } else {
+                            card.style.display = 'none';
+                        }
+                    });
+
+                    // Hide empty sections (sections where all cards are display:none)
+                    // We also select any div that has class container and check its parent
+                    const containers = document.querySelectorAll('.container');
+                    containers.forEach(container => {
+                        const visibleCards = Array.from(container.querySelectorAll('.food-card')).filter(card => card.style.display === 'block');
+                        const parentSection = container.parentElement;
+                        
+                        // Check if the parent looks like one of our major sections
+                        if(parentSection && parentSection.tagName.toLowerCase() === 'div' && parentSection.classList.length > 0) {
+                            if (visibleCards.length === 0) {
+                                parentSection.style.display = 'none';
+                            } else {
+                                parentSection.style.display = 'block';
+                            }
+                        }
+                    });
+                });
+                
+                // Add focus effects to search input
+                searchInput.addEventListener('focus', function() {
+                    this.style.borderColor = '#007BFF';
+                    this.style.boxShadow = '0 6px 20px rgba(4, 51, 255, 0.4)';
+                });
+                searchInput.addEventListener('blur', function() {
+                    this.style.borderColor = 'rgba(255, 255, 255, 0.2)';
+                    this.style.boxShadow = '0 4px 15px rgba(0, 0, 0, 0.5)';
+                });
+            }
+        });
     </script>
     <footer class="footer">
         <div class="footer-content">

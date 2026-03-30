@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Smart Fitness – Payment Report</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
+        body { font-family: 'Poppins', sans-serif; background: linear-gradient(to bottom right,#1a1c2e,#14162a); color:#fff; }
+        .glass-effect { background:rgba(255,255,255,0.05); backdrop-filter:blur(10px); border:1px solid rgba(255,255,255,0.1); }
+        .sidebar-link { display:flex; align-items:center; gap:.75rem; padding:.75rem 1rem; border-radius:.75rem; color:#d1d5db; transition:all .25s; }
+        .sidebar-link:hover { background:rgba(255,255,255,.08); }
+        .sidebar-link.active { background:linear-gradient(to right,#7c3aed,#2563eb); color:#fff; }
+
+        @media print {
+            aside, .no-print { display:none !important; }
+            body { background:#fff !important; color:#111 !important; }
+            .glass-effect { background:#fff !important; border:1px solid #e5e7eb !important; border-radius:0.5rem; }
+            table { font-size:0.8rem; }
+            .text-green-400 { color:#16a34a !important; }
+            .text-orange-400{ color:#d97706 !important; }
+            .text-red-400   { color:#dc2626 !important; }
+        }
+    </style>
+</head>
+<body>
+<div class="flex h-screen overflow-hidden">
+
+    <!-- Sidebar -->
+    <aside class="hidden lg:flex flex-col w-64 h-screen glass-effect flex-shrink-0 no-print">
+        <div class="p-6 border-b border-white/10">
+            <a href="/admin/dashboard" class="flex items-center gap-3">
+                <div class="bg-gradient-to-r from-purple-500 to-blue-500 p-2.5 rounded-lg"><i class="fas fa-dumbbell text-white"></i></div>
+                <h1 class="text-xl font-bold bg-gradient-to-r from-blue-400 via-purple-400 to-pink-400 bg-clip-text text-transparent">Smart Fitness</h1>
+            </a>
+        </div>
+        <nav class="flex-1 p-4 space-y-1 overflow-y-auto">
+            <a href="/admin/dashboard"         class="sidebar-link"><i class="fas fa-chart-line w-4 text-center"></i> Overview</a>
+            <a href="/admin/members"           class="sidebar-link"><i class="fas fa-users w-4 text-center"></i> Members</a>
+            <a href="/admin/payment-history"   class="sidebar-link"><i class="fas fa-credit-card w-4 text-center"></i> Payments</a>
+            <a href="/admin/payment-report"    class="sidebar-link active"><i class="fas fa-file-alt w-4 text-center"></i> Payment Report</a>
+            <a href="/admin/training-sessions" class="sidebar-link"><i class="fas fa-calendar-check w-4 text-center"></i> Sessions</a>
+            <a href="/admin/supplements"       class="sidebar-link"><i class="fas fa-pills w-4 text-center"></i> Supplements</a>
+            <a href="/admin/announcements"     class="sidebar-link"><i class="fas fa-bullhorn w-4 text-center"></i> Announcements</a>
+        </nav>
+        <div class="p-4 border-t border-white/10">
+            <a href="/logout"><button class="w-full bg-white/10 hover:bg-white/20 text-white rounded-xl p-2.5 flex items-center justify-center gap-2 transition"><i class="fas fa-sign-out-alt"></i> Log Out</button></a>
+        </div>
+    </aside>
+
+    <!-- Main -->
+    <main class="flex-1 overflow-y-auto p-6">
+        <div class="max-w-7xl mx-auto">
+
+            <!-- Header -->
+            <header class="mb-8 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 no-print">
+                <div>
+                    <h1 class="text-3xl font-bold bg-gradient-to-r from-blue-400 via-purple-400 to-pink-400 bg-clip-text text-transparent">Financial Report</h1>
+                    <p class="text-gray-400 mt-1">Complete payment breakdown &amp; export.</p>
+                </div>
+                <div class="flex gap-3">
+                    <button onclick="exportCSV()"
+                            class="flex items-center gap-2 px-4 py-2.5 bg-green-600/80 hover:bg-green-600 text-white font-medium rounded-xl shadow transition-all">
+                        <i class="fas fa-file-csv"></i> Export CSV
+                    </button>
+                    <button onclick="window.print()"
+                            class="flex items-center gap-2 px-4 py-2.5 bg-white/10 hover:bg-white/20 text-white font-medium rounded-xl shadow transition-all">
+                        <i class="fas fa-print"></i> Print / PDF
+                    </button>
+                </div>
+            </header>
+
+            <!-- Report Header (shows in print) -->
+            <div class="glass-effect rounded-2xl p-6 mb-6 text-center hidden print:block">
+                <h2 class="text-2xl font-bold">Smart Fitness — Payment Report</h2>
+                <p class="text-gray-400 text-sm mt-1">Generated on: <span id="reportDate"></span></p>
+            </div>
+
+            <!-- KPI Cards -->
+            <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+                <div class="glass-effect rounded-xl p-5 flex items-center gap-4">
+                    <div class="w-12 h-12 rounded-xl bg-green-500/20 flex items-center justify-center flex-shrink-0">
+                        <i class="fas fa-dollar-sign text-green-400 text-lg"></i>
+                    </div>
+                    <div>
+                        <p class="text-xs text-gray-400 uppercase tracking-wider">Total Revenue</p>
+                        <p class="text-2xl font-bold text-green-400">$<span th:text="${#numbers.formatDecimal(totalRevenue,1,2)}">0.00</span></p>
+                    </div>
+                </div>
+                <div class="glass-effect rounded-xl p-5 flex items-center gap-4">
+                    <div class="w-12 h-12 rounded-xl bg-blue-500/20 flex items-center justify-center flex-shrink-0">
+                        <i class="fas fa-receipt text-blue-400 text-lg"></i>
+                    </div>
+                    <div>
+                        <p class="text-xs text-gray-400 uppercase tracking-wider">Total Transactions</p>
+                        <p class="text-2xl font-bold text-blue-400" th:text="${totalCount}">0</p>
+                    </div>
+                </div>
+                <div class="glass-effect rounded-xl p-5 flex items-center gap-4">
+                    <div class="w-12 h-12 rounded-xl bg-orange-500/20 flex items-center justify-center flex-shrink-0">
+                        <i class="fas fa-clock text-orange-400 text-lg"></i>
+                    </div>
+                    <div>
+                        <p class="text-xs text-gray-400 uppercase tracking-wider">Pending Review</p>
+                        <p class="text-2xl font-bold text-orange-400" th:text="${pendingCount}">0</p>
+                    </div>
+                </div>
+                <div class="glass-effect rounded-xl p-5 flex items-center gap-4">
+                    <div class="w-12 h-12 rounded-xl bg-red-500/20 flex items-center justify-center flex-shrink-0">
+                        <i class="fas fa-ban text-red-400 text-lg"></i>
+                    </div>
+                    <div>
+                        <p class="text-xs text-gray-400 uppercase tracking-wider">Rejected</p>
+                        <p class="text-2xl font-bold text-red-400" th:text="${rejectedCount}">0</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Status Breakdown Bar -->
+            <div class="glass-effect rounded-xl p-6 mb-8" th:if="${totalCount > 0}">
+                <h2 class="text-sm font-semibold uppercase tracking-wider text-gray-400 mb-4">Payment Status Breakdown</h2>
+                <div class="flex rounded-full overflow-hidden h-5 mb-2"
+                     th:with="vPct=${totalCount > 0 ? (verifiedCount * 100 / totalCount) : 0},
+                               pPct=${totalCount > 0 ? (pendingCount  * 100 / totalCount) : 0},
+                               rPct=${totalCount > 0 ? (rejectedCount * 100 / totalCount) : 0}">
+                    <div class="bg-green-500  transition-all" th:style="'width:' + ${vPct} + '%'" title="Verified"></div>
+                    <div class="bg-orange-400 transition-all" th:style="'width:' + ${pPct} + '%'" title="Pending"></div>
+                    <div class="bg-red-500    transition-all" th:style="'width:' + ${rPct} + '%'" title="Rejected"></div>
+                </div>
+                <div class="flex gap-6 text-xs text-gray-400">
+                    <span class="flex items-center gap-1"><span class="w-3 h-3 rounded bg-green-500  block"></span> Verified (<span th:text="${verifiedCount}"></span>)</span>
+                    <span class="flex items-center gap-1"><span class="w-3 h-3 rounded bg-orange-400 block"></span> Pending (<span th:text="${pendingCount}"></span>)</span>
+                    <span class="flex items-center gap-1"><span class="w-3 h-3 rounded bg-red-500    block"></span> Rejected (<span th:text="${rejectedCount}"></span>)</span>
+                </div>
+            </div>
+
+            <!-- Full Transactions Table -->
+            <div class="glass-effect rounded-2xl overflow-hidden">
+                <div class="px-6 py-4 border-b border-white/10 flex items-center justify-between">
+                    <h2 class="font-semibold text-white">All Transactions</h2>
+                    <span class="text-xs text-gray-400" th:text="${totalCount} + ' records'"></span>
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-sm" id="reportTable">
+                        <thead>
+                            <tr class="bg-white/5 text-gray-400 uppercase text-xs tracking-wider">
+                                <th class="px-5 py-3 text-left">Invoice</th>
+                                <th class="px-5 py-3 text-left">Member</th>
+                                <th class="px-5 py-3 text-left">Plan</th>
+                                <th class="px-5 py-3 text-left">Method</th>
+                                <th class="px-5 py-3 text-left">Date</th>
+                                <th class="px-5 py-3 text-right">Amount</th>
+                                <th class="px-5 py-3 text-center">Status</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-white/5">
+                            <tr th:if="${#lists.isEmpty(payments)}">
+                                <td colspan="7" class="px-5 py-10 text-center text-gray-500">No transactions recorded yet.</td>
+                            </tr>
+                            <tr th:each="p : ${payments}" class="hover:bg-white/5 transition-colors">
+                                <td class="px-5 py-3 font-mono text-gray-400 text-xs" th:text="'INV-' + ${p.id}"></td>
+                                <td class="px-5 py-3 font-medium text-white" th:text="${p.userName != null ? p.userName : '—'}"></td>
+                                <td class="px-5 py-3 text-gray-300" th:text="${p.planName != null ? p.planName : '—'}"></td>
+                                <td class="px-5 py-3 text-gray-400 text-xs">
+                                    <span class="bg-white/10 px-2 py-1 rounded-lg" th:text="${p.paymentMethod}"></span>
+                                </td>
+                                <td class="px-5 py-3 text-gray-400 text-xs" th:text="${#temporals.format(p.paymentDate,'MMM dd, yyyy')}"></td>
+                                <td class="px-5 py-3 text-right font-semibold text-green-400" th:text="'$' + ${#numbers.formatDecimal(p.amount,1,2)}"></td>
+                                <td class="px-5 py-3 text-center">
+                                    <span th:if="${p.status == 'PENDING'}"                              class="px-2 py-0.5 text-xs font-bold rounded-full bg-orange-500/20 text-orange-400">PENDING</span>
+                                    <span th:if="${p.status == 'VERIFIED' or p.status == 'completed'}" class="px-2 py-0.5 text-xs font-bold rounded-full bg-green-500/20  text-green-400">VERIFIED</span>
+                                    <span th:if="${p.status == 'REJECTED' or p.status == 'failed'}"   class="px-2 py-0.5 text-xs font-bold rounded-full bg-red-500/20    text-red-400">REJECTED</span>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+        </div>
+    </main>
+</div>
+
+<script>
+    // Set today's date for print header
+    document.getElementById('reportDate').textContent = new Date().toLocaleDateString('en-US', { dateStyle: 'long' });
+
+    function exportCSV() {
+        const table    = document.getElementById('reportTable');
+        const rows     = table.querySelectorAll('tr');
+        const csvParts = [];
+
+        rows.forEach(row => {
+            const cells = row.querySelectorAll('th, td');
+            const cols  = Array.from(cells).map(c => '"' + c.innerText.trim().replace(/"/g, '""') + '"');
+            if (cols.length > 0) csvParts.push(cols.join(','));
+        });
+
+        const csvContent  = csvParts.join('\n');
+        const blob        = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+        const url         = URL.createObjectURL(blob);
+        const link        = document.createElement('a');
+        const today       = new Date().toISOString().slice(0, 10);
+
+        link.setAttribute('href', url);
+        link.setAttribute('download', 'SmartFitness_PaymentReport_' + today + '.csv');
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        URL.revokeObjectURL(url);
+    }
+</script>
+</body>
+</html>

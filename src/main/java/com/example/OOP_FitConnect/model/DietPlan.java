@@ -25,6 +25,7 @@ public class DietPlan {
     private String memberName;
 
     private List<Meal> meals = new ArrayList<>();
+    private List<RecommendedSupplement> recommendedSupplements = new ArrayList<>();
 
     public DietPlan() {
         this.status = "ACTIVE";
@@ -79,4 +80,7 @@ public class DietPlan {
 
     public List<Meal> getMeals()               { return meals; }
     public void setMeals(List<Meal> meals)     { this.meals = meals; }
+
+    public List<RecommendedSupplement> getRecommendedSupplements() { return recommendedSupplements; }
+    public void setRecommendedSupplements(List<RecommendedSupplement> recommendedSupplements) { this.recommendedSupplements = recommendedSupplements; }
 }

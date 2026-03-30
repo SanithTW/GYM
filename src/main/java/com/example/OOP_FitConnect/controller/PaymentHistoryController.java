@@ -5,10 +5,9 @@ import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import com.example.OOP_FitConnect.model.Payment;
 import com.example.OOP_FitConnect.service.PaymentHistoryService;
@@ -24,9 +23,56 @@ public class PaymentHistoryController {
         this.paymentHistoryService = paymentHistoryService;
     }
 
+    // ── Payment History Page ──────────────────────────────────────
     @GetMapping("/payment-history")
-    public String paymentHistoryPage() {
+    public String paymentHistoryPage(Model model) {
+        List<Payment> allPayments = paymentHistoryService.getAllPayments();
+        double totalRevenue    = paymentHistoryService.getTotalRevenue();
+        long pendingCount      = allPayments.stream().filter(p -> "PENDING".equalsIgnoreCase(p.getStatus())).count();
+        long verifiedCount     = allPayments.stream().filter(p -> "VERIFIED".equalsIgnoreCase(p.getStatus()) || "completed".equalsIgnoreCase(p.getStatus())).count();
+        long rejectedCount     = allPayments.stream().filter(p -> "REJECTED".equalsIgnoreCase(p.getStatus()) || "failed".equalsIgnoreCase(p.getStatus())).count();
+
+        model.addAttribute("payments", allPayments);
+        model.addAttribute("totalRevenue", totalRevenue);
+        model.addAttribute("pendingCount", pendingCount);
+        model.addAttribute("verifiedCount", verifiedCount);
+        model.addAttribute("rejectedCount", rejectedCount);
         return "Admin_payment_history";
+    }
+
+    // ── Admin Verifies / Rejects Payment ─────────────────────────
+    @PostMapping("/payments/verify")
+    public String verifyPayment(@RequestParam("paymentId") int paymentId,
+                                @RequestParam("action") String action,
+                                RedirectAttributes redirectAttributes) {
+        String newStatus = "verify".equalsIgnoreCase(action) ? "VERIFIED" : "REJECTED";
+        paymentHistoryService.updatePaymentStatus(paymentId, newStatus);
+
+        if ("verify".equalsIgnoreCase(action)) {
+            redirectAttributes.addFlashAttribute("success", "Payment #" + paymentId + " has been verified.");
+        } else {
+            redirectAttributes.addFlashAttribute("error", "Payment #" + paymentId + " has been rejected.");
+        }
+        return "redirect:/admin/payment-history";
+    }
+
+    // ── Payment Report Page ───────────────────────────────────────
+    @GetMapping("/payment-report")
+    public String paymentReportPage(Model model) {
+        List<Payment> allPayments = paymentHistoryService.getAllPayments();
+        double totalRevenue   = paymentHistoryService.getTotalRevenue();
+        long totalCount       = allPayments.size();
+        long pendingCount     = allPayments.stream().filter(p -> "PENDING".equalsIgnoreCase(p.getStatus())).count();
+        long verifiedCount    = allPayments.stream().filter(p -> "VERIFIED".equalsIgnoreCase(p.getStatus()) || "completed".equalsIgnoreCase(p.getStatus())).count();
+        long rejectedCount    = allPayments.stream().filter(p -> "REJECTED".equalsIgnoreCase(p.getStatus()) || "failed".equalsIgnoreCase(p.getStatus())).count();
+
+        model.addAttribute("payments", allPayments);
+        model.addAttribute("totalRevenue", totalRevenue);
+        model.addAttribute("totalCount", totalCount);
+        model.addAttribute("pendingCount", pendingCount);
+        model.addAttribute("verifiedCount", verifiedCount);
+        model.addAttribute("rejectedCount", rejectedCount);
+        return "admin_payment_report";
     }
 
     @GetMapping("/membership-plans")
@@ -34,6 +80,7 @@ public class PaymentHistoryController {
         return "membership_plan_management_new";
     }
 
+    // ── REST API ──────────────────────────────────────────────────
     @GetMapping("/api/payments")
     @ResponseBody
     public ResponseEntity<List<Payment>> getPayments(
@@ -41,7 +88,6 @@ public class PaymentHistoryController {
             @RequestParam(required = false) String search) {
 
         List<Payment> payments;
-
         if (search != null && !search.isEmpty()) {
             payments = paymentHistoryService.searchPayments(search);
         } else if (status != null && !status.isEmpty()) {
@@ -49,7 +95,6 @@ public class PaymentHistoryController {
         } else {
             payments = paymentHistoryService.getAllPayments();
         }
-
         return ResponseEntity.ok(payments);
     }
 
@@ -58,4 +103,4 @@ public class PaymentHistoryController {
     public double getTotalRevenue() {
         return paymentHistoryService.getTotalRevenue();
     }
-} 
+}

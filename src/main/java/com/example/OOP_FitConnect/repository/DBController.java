@@ -249,6 +249,10 @@ public class DBController {
         return payment;
     }
 
+    public void updatePaymentStatus(int paymentId, String status) {
+        jdbcTemplate.update("UPDATE payments SET status = ? WHERE id = ?", status, paymentId);
+    }
+
     public double getTotalRevenue() {
         Double total = jdbcTemplate.queryForObject(
                 "SELECT COALESCE(SUM(amount), 0) FROM payments WHERE status = 'completed'", Double.class

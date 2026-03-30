@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Smart Fitness - Admin Training Sessions</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
+        body { font-family: 'Poppins', sans-serif; background: linear-gradient(to bottom right, #1a1c2e, #14162a); color: #fff; }
+        .glass-effect { background: rgba(255, 255, 255, 0.05); backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.1); }
+        .sidebar-link.active { background: linear-gradient(to right, #ef4444, #b91c1c); }
+        .sidebar-link:not(.active):hover { background: rgba(255, 255, 255, 0.1); }
+    </style>
+</head>
+<body>
+<div class="flex h-screen overflow-hidden">
+    <!-- Sidebar -->
+    <aside class="w-64 glass-effect flex flex-col transition-all duration-300">
+        <div class="p-6 border-b border-gray-700/50">
+            <h1 class="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-red-500 to-orange-500">AdminPanel</h1>
+        </div>
+        <nav class="flex-1 overflow-y-auto py-4 px-3 space-y-1">
+            <a href="/admin/dashboard" class="sidebar-link flex items-center px-4 py-3 text-gray-300 rounded-xl transition-all"><i class="fas fa-chart-line w-6"></i>Overview</a>
+            <a href="/admin/members" class="sidebar-link flex items-center px-4 py-3 text-gray-300 rounded-xl transition-all"><i class="fas fa-users w-6"></i>Members</a>
+            <a href="/admin/instructors" class="sidebar-link flex items-center px-4 py-3 text-gray-300 rounded-xl transition-all"><i class="fas fa-chalkboard-teacher w-6"></i>Instructors</a>
+            <a href="/admin/diet-plans" class="sidebar-link flex items-center px-4 py-3 text-gray-300 rounded-xl transition-all"><i class="fas fa-leaf w-6"></i>Diet Plans</a>
+            <a href="/admin/training-sessions" class="sidebar-link active flex items-center px-4 py-3 text-white rounded-xl transition-all"><i class="fas fa-calendar-check w-6"></i>Sessions</a>
+            <a href="/admin/supplements" class="sidebar-link flex items-center px-4 py-3 text-gray-300 rounded-xl transition-all"><i class="fas fa-pills w-6"></i>Supplements</a>
+            <a href="/admin/payments" class="sidebar-link flex items-center px-4 py-3 text-gray-300 rounded-xl transition-all"><i class="fas fa-credit-card w-6"></i>Payments</a>
+        </nav>
+        <div class="p-4 border-t border-gray-700/50">
+            <a href="/logout" class="flex items-center gap-3 px-4 py-3 text-gray-300 hover:text-white hover:bg-white/5 rounded-xl transition-all bg-red-500/10 hover:bg-red-500/20 text-red-400">
+                <i class="fas fa-sign-out-alt"></i><span>Logout</span>
+            </a>
+        </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="flex-1 overflow-y-auto bg-black/20">
+        <div class="p-8">
+            <header class="flex justify-between items-center mb-8">
+                <div>
+                    <h2 class="text-3xl font-bold text-white mb-2">Training Sessions Overview</h2>
+                    <p class="text-gray-400">Monitor all scheduled sessions, bookings, and capacities globally.</p>
+                </div>
+            </header>
+
+            <div class="glass-effect rounded-2xl overflow-hidden border border-gray-700/50">
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left border-collapse">
+                        <thead>
+                            <tr class="bg-gray-800/50 border-b border-gray-700 ">
+                                <th class="px-6 py-4 text-sm font-semibold text-gray-300">Session ID</th>
+                                <th class="px-6 py-4 text-sm font-semibold text-gray-300">Title & Instructor</th>
+                                <th class="px-6 py-4 text-sm font-semibold text-gray-300">Type</th>
+                                <th class="px-6 py-4 text-sm font-semibold text-gray-300">Schedule</th>
+                                <th class="px-6 py-4 text-sm font-semibold text-gray-300">Capacity Booked</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-gray-700/50">
+                            <tr th:if="${#lists.isEmpty(sessions)}">
+                                <td colspan="5" class="px-6 py-8 text-center text-gray-500">
+                                    No training sessions found in the system.
+                                </td>
+                            </tr>
+                            <tr th:each="session : ${sessions}" class="hover:bg-white/5 transition-colors">
+                                <td class="px-6 py-4">
+                                    <span class="text-gray-400 text-sm font-mono" th:text="'#' + ${session.id}"></span>
+                                </td>
+                                <td class="px-6 py-4">
+                                    <div class="flex items-center gap-3">
+                                        <div class="w-10 h-10 rounded-full bg-blue-500/20 text-blue-400 flex items-center justify-center">
+                                            <i th:if="${session.sessionType == '1ON1'}" class="fas fa-user"></i>
+                                            <i th:if="${session.sessionType == 'GROUP'}" class="fas fa-users"></i>
+                                        </div>
+                                        <div>
+                                            <div class="font-medium text-white" th:text="${session.title}">Title</div>
+                                            <div class="text-xs text-gray-400"><i class="fas fa-chalkboard-teacher text-gray-500 mr-1"></i> <span th:text="${session.instructorName}"></span></div>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td class="px-6 py-4">
+                                    <span class="px-2.5 py-1 text-xs font-medium rounded-full bg-blue-500/10 text-blue-400 border border-blue-500/20" th:text="${session.sessionType}">GROUP</span>
+                                </td>
+                                <td class="px-6 py-4">
+                                    <div class="text-sm text-gray-300" th:text="${#temporals.format(session.startTime, 'MMM dd, yyyy')}"></div>
+                                    <div class="text-xs text-gray-500"><span th:text="${#temporals.format(session.startTime, 'h:mm a')}"></span> - <span th:text="${#temporals.format(session.endTime, 'h:mm a')}"></span></div>
+                                </td>
+                                <td class="px-6 py-4">
+                                    <div class="flex items-center gap-3">
+                                        <div class="flex-1 max-w-[120px]">
+                                            <div class="w-full bg-gray-700 rounded-full h-1.5 mb-1 relative overflow-hidden">
+                                                <div class="bg-green-500 h-1.5 rounded-full" th:style="'width: ' + (${session.currentBookings * 100} / ${session.capacity}) + '%'"></div>
+                                            </div>
+                                            <div class="flex justify-between text-xs">
+                                                <span class="text-gray-400 font-medium"><span th:text="${session.currentBookings}">0</span> / <span th:text="${session.capacity}"></span></span>
+                                            </div>
+                                        </div>
+                                        <span th:if="${session.currentBookings == session.capacity}" class="text-[10px] text-red-400 bg-red-400/10 px-2 py-0.5 rounded uppercase font-bold tracking-wider">Full</span>
+                                    </div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            
+        </div>
+    </main>
+</div>
+</body>
+</html>
