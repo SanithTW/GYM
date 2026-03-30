@@ -5,8 +5,23 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>About Us</title>
     <link rel="stylesheet" href="about.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
+        :root {
+            --surface-1: #ffffff;
+            --surface-2: #f4f6fa;
+            --text-1: #1f2430;
+            --text-2: #5c6475;
+            --brand: #ff3b1f;
+            --brand-dark: #cc2a14;
+            --radius: 14px;
+            --soft-shadow: 0 12px 34px rgba(16, 24, 40, 0.08);
+            --card-border: 1px solid rgba(15, 23, 42, 0.08);
+        }
+
         * {
            margin: 0;
            padding: 0;
@@ -14,12 +29,34 @@
        }
 
        body {
-           font-family: Arial, sans-serif;
-           background-color: #0c0f18;
+           font-family: 'Manrope', sans-serif;
+           background: radial-gradient(circle at 10% 10%, rgba(255, 59, 31, 0.08), transparent 40%),
+                       radial-gradient(circle at 90% 20%, rgba(2, 132, 199, 0.08), transparent 35%),
+                       #f1f4f9;
+           color: var(--text-1);
 
            margin: 0;
            padding: 0;
            text-align: center;
+       }
+
+       .container {
+            width: min(1240px, calc(100% - 5rem));
+            margin: 0 auto;
+            padding: 0;
+        }
+
+       section {
+            position: relative;
+            overflow: hidden;
+            opacity: 0;
+            transform: translateY(20px);
+            transition: opacity 0.75s ease, transform 0.75s ease;
+       }
+
+       section.is-visible {
+            opacity: 1;
+            transform: translateY(0);
        }
 
        /* Header Styles */
@@ -35,6 +72,7 @@
 
        .main-header {
            background-color: #1a1a1a;
+           border-bottom: 1px solid rgba(255, 255, 255, 0.08);
        }
 
        .benefits-header {
@@ -202,8 +240,13 @@
             background-position: center;
             color: white;
             text-align: center;
-            padding: 80px 20px;
+            padding: 110px 20px;
             position: relative;
+            box-shadow: inset 0 -140px 120px rgba(0, 0, 0, 0.25);
+        }
+
+        .about-hero-content {
+            animation: fadeIn 1s ease-out both, floatEffect 7s ease-in-out infinite;
         }
 
         .about-hero-content h1 {
@@ -222,7 +265,7 @@
         /* Our Story section */
         .about-story {
             padding: 50px 0;
-            background-color: white;
+            background-color: var(--surface-1);
         }
 
         .about-story h2 {
@@ -246,6 +289,7 @@
         .about-text p {
             margin-bottom: 15px;
             line-height: 1.8;
+            color: var(--text-2);
         }
 
         .about-image {
@@ -256,13 +300,14 @@
         .about-image img {
             width: 100%;
             height: auto;
-            border-radius: 5px;
+            border-radius: var(--radius);
+            box-shadow: var(--soft-shadow);
         }
 
         /* Timeline section */
         .milestone-timeline {
             padding: 50px 0;
-            background-color: #f5f5f5;
+            background-color: var(--surface-2);
         }
 
         .milestone-timeline h2 {
@@ -281,10 +326,16 @@
             padding: 20px 30px;
             position: relative;
             background-color: white;
-            border-radius: 6px;
+            border-radius: var(--radius);
+            border: var(--card-border);
             margin-bottom: 30px;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-            transition: transform 0.3s;
+            box-shadow: var(--soft-shadow);
+            transition: transform 0.25s ease, box-shadow 0.25s ease;
+        }
+
+        .timeline-item:hover {
+            transform: translateY(-6px);
+            box-shadow: 0 18px 38px rgba(16, 24, 40, 0.14);
         }
 
         .timeline-item.animated {
@@ -306,7 +357,7 @@
         /* Core Values */
         .core-values {
             padding: 50px 0;
-            background-color: #f5f5f5;
+            background-color: var(--surface-2);
         }
 
         .core-values h2 {
@@ -324,9 +375,16 @@
         .value {
             background-color: white;
             padding: 25px;
-            border-radius: 5px;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            border-radius: var(--radius);
+            border: var(--card-border);
+            box-shadow: var(--soft-shadow);
             text-align: left;
+            transition: transform 0.25s ease, box-shadow 0.25s ease;
+        }
+
+        .value:hover {
+            transform: translateY(-6px);
+            box-shadow: 0 18px 38px rgba(16, 24, 40, 0.14);
         }
 
         .value i {
@@ -343,7 +401,7 @@
         /* Facilities Section */
         .facilities {
             padding: 50px 0;
-            background-color: white;
+            background-color: var(--surface-1);
         }
 
         .facilities h2 {
@@ -364,9 +422,17 @@
         }
 
         .facility {
-            background-color: #f5f5f5;
+            background-color: #ffffff;
             padding: 25px;
-            border-radius: 5px;
+            border-radius: var(--radius);
+            border: var(--card-border);
+            box-shadow: var(--soft-shadow);
+            transition: transform 0.25s ease, box-shadow 0.25s ease;
+        }
+
+        .facility:hover {
+            transform: translateY(-6px);
+            box-shadow: 0 18px 38px rgba(16, 24, 40, 0.14);
         }
 
         .facility i {
@@ -383,7 +449,7 @@
         /* Gym Staff Section */
         .gym-staff {
             padding: 50px 0;
-            background-color: #f5f5f5;
+            background-color: var(--surface-2);
         }
 
         .gym-staff h2 {
@@ -401,14 +467,16 @@
 
         .staff-member {
             background-color: white;
-            border-radius: 5px;
+            border-radius: var(--radius);
             overflow: hidden;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-            transition: transform 0.3s;
+            border: var(--card-border);
+            box-shadow: var(--soft-shadow);
+            transition: transform 0.25s ease, box-shadow 0.25s ease;
         }
 
         .staff-member:hover {
-            transform: translateY(-5px);
+            transform: translateY(-6px);
+            box-shadow: 0 18px 38px rgba(16, 24, 40, 0.14);
         }
 
         .staff-member img {
@@ -437,7 +505,7 @@
         /* Testimonials */
         .testimonials {
             padding: 50px 0;
-            background-color: white;
+            background-color: var(--surface-1);
         }
 
         .testimonials h2 {
@@ -453,10 +521,17 @@
         }
 
         .testimonial {
-            background-color: #f5f5f5;
-            border-radius: 5px;
+            background-color: #ffffff;
+            border-radius: var(--radius);
             overflow: hidden;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            border: var(--card-border);
+            box-shadow: var(--soft-shadow);
+            transition: transform 0.25s ease, box-shadow 0.25s ease;
+        }
+
+        .testimonial:hover {
+            transform: translateY(-6px);
+            box-shadow: 0 18px 38px rgba(16, 24, 40, 0.14);
         }
 
         .testimonial-text {
@@ -486,7 +561,7 @@
         /* Join Team */
         .join-team {
             padding: 50px 0;
-            background-color: #f5f5f5;
+            background-color: var(--surface-2);
         }
 
         .join-team h2 {
@@ -505,8 +580,15 @@
         .benefit {
             background-color: white;
             padding: 20px;
-            border-radius: 5px;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            border-radius: var(--radius);
+            border: var(--card-border);
+            box-shadow: var(--soft-shadow);
+            transition: transform 0.25s ease, box-shadow 0.25s ease;
+        }
+
+        .benefit:hover {
+            transform: translateY(-6px);
+            box-shadow: 0 18px 38px rgba(16, 24, 40, 0.14);
         }
 
         .benefit i {
@@ -522,39 +604,44 @@
 
         .career-btn {
             display: inline-block;
-            background-color: #ff0000;
+            background: linear-gradient(120deg, var(--brand), #ff7a00);
             color: white;
             padding: 10px 20px;
-            border-radius: 5px;
+            border-radius: 999px;
             text-decoration: none;
             font-weight: bold;
-            transition: background-color 0.3s;
+            box-shadow: 0 10px 26px rgba(255, 59, 31, 0.25);
+            transition: transform 0.25s ease, box-shadow 0.25s ease;
         }
 
         .career-btn:hover {
-            background-color: #cc0000;
+            transform: translateY(-2px);
+            box-shadow: 0 15px 30px rgba(255, 59, 31, 0.32);
         }
 
         /* FAQ */
          .faq {
             padding: 50px 0;
-            background-color: white;
+            background-color: var(--surface-1);
+            text-align: center;
          }
 
         .faq h2 {
             font-size: 28px;
             margin-bottom: 30px;
-            text-align: left;
+            text-align: center;
         }
 
         .faq-container {
             max-width: 800px;
+            margin: 0 auto;
         }
 
         .faq-item {
             margin-bottom: 20px;
             border-bottom: 1px solid #e0e0e0;
             padding-bottom: 20px;
+            text-align: left;
         }
 
         .faq-item h3 {
@@ -580,7 +667,7 @@
         /* Contact Section */
         .get-in-touch {
             padding: 50px 0;
-            background-color: #f5f5f5;
+            background-color: var(--surface-2);
         }
 
         .get-in-touch h2 {
@@ -599,8 +686,9 @@
         .contact-form {
             background-color: white;
             padding: 30px;
-            border-radius: 5px;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            border-radius: var(--radius);
+            border: var(--card-border);
+            box-shadow: var(--soft-shadow);
         }
 
         .form-group {
@@ -691,7 +779,7 @@
         /* Location Map */
         .location-map {
             padding: 50px 0;
-            background-color: white;
+            background-color: var(--surface-1);
             text-align: center;
         }
 
@@ -707,22 +795,78 @@
         .location-map-image {
             max-width: 100%;
             height: auto;
-            border-radius: 5px;
+            border-radius: var(--radius);
+            box-shadow: var(--soft-shadow);
         }
 
         .location-btn {
             display: inline-block;
-            background-color: #ff0000;
+            background: linear-gradient(120deg, var(--brand), #ff7a00);
             color: white;
             padding: 10px 25px;
-            border-radius: 5px;
+            border-radius: 999px;
             text-decoration: none;
             font-weight: bold;
-            transition: background-color 0.3s;
+            box-shadow: 0 10px 26px rgba(255, 59, 31, 0.25);
+            transition: transform 0.25s ease, box-shadow 0.25s ease;
         }
 
         .location-btn:hover {
-            background-color: #cc0000;
+            transform: translateY(-2px);
+            box-shadow: 0 15px 30px rgba(255, 59, 31, 0.32);
+        }
+
+        .timeline h2,
+        .core-values h2,
+        .facilities h2,
+        .gym-staff h2,
+        .testimonials h2,
+        .join-team h2,
+        .faq h2,
+        .location-map h2,
+        .about-story h2 {
+            position: relative;
+            display: inline-block;
+            padding-bottom: 8px;
+        }
+
+        .timeline h2::after,
+        .core-values h2::after,
+        .facilities h2::after,
+        .gym-staff h2::after,
+        .testimonials h2::after,
+        .join-team h2::after,
+        .faq h2::after,
+        .location-map h2::after,
+        .about-story h2::after {
+            content: "";
+            position: absolute;
+            left: 0;
+            bottom: 0;
+            width: 58%;
+            height: 4px;
+            border-radius: 999px;
+            background: linear-gradient(90deg, var(--brand), rgba(255, 122, 0, 0.15));
+        }
+
+        @media (max-width: 900px) {
+            .container {
+                width: min(1240px, calc(100% - 2.5rem));
+            }
+
+            .contact-container {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 640px) {
+            .container {
+                width: calc(100% - 2rem);
+            }
+
+            .about-hero {
+                padding: 90px 16px;
+            }
         }
     </style>
 </head>
@@ -995,8 +1139,6 @@
                 <p>Industry-leading compensation packages including health benefits and fitness perks</p>
             </div>
         </div>
-
-        <a href="careers.html" class="btn career-btn">View Current Openings</a>
     </div>
 </section>
 
@@ -1070,5 +1212,24 @@
         <p>&copy; 2025. Smart Fitness.com</p>
     </div>
 </footer>
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const revealElements = document.querySelectorAll('section, .timeline-item, .value, .facility, .staff-member, .testimonial, .benefit');
+
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach((entry) => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('is-visible');
+                    observer.unobserve(entry.target);
+                }
+            });
+        }, {
+            threshold: 0.15,
+            rootMargin: '0px 0px -60px 0px'
+        });
+
+        revealElements.forEach((el) => observer.observe(el));
+    });
+</script>
 </body>
 </html>

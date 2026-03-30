@@ -425,10 +425,22 @@ nav ul li a:hover {
 }
 
 body {
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    font-family: 'Manrope', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     background-color: #ffffff;
     color: #080808;
     animation: fadeIn 1s ease-in-out;
+}
+
+:root {
+    --surface-1: #ffffff;
+    --surface-2: #f4f6fa;
+    --text-1: #1f2430;
+    --text-2: #5c6475;
+    --brand: #ff3b1f;
+    --brand-dark: #cc2a14;
+    --radius: 14px;
+    --soft-shadow: 0 12px 34px rgba(16, 24, 40, 0.08);
+    --card-border: 1px solid rgba(15, 23, 42, 0.08);
 }
 
 
@@ -514,128 +526,179 @@ body {
     color: #121111;
 }
 
-.footer-bottom {
-    text-align: center;
-    padding-top: 20px;
-    border-top: 1px solid #ffffff;
-    margin-top: 40px;
-    width: 100%;
-}
 .trainers {
     text-align: center;
-    padding: 50px 30px;
-    background-color: #ffffff;
+    padding: 60px 30px;
+    background-color: var(--surface-2);
+}
+
+.trainers-header {
+    margin-bottom: 45px;
 }
 
 .trainers-header h2 {
-    font-size: 2.5rem;
+    font-size: 2.6rem;
     margin-bottom: 15px;
-    color: #333;
+    color: var(--text-1);
+    font-weight: 800;
+    position: relative;
+    display: inline-block;
+    padding-bottom: 12px;
+}
+
+.trainers-header h2::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    bottom: 0;
+    width: 58%;
+    height: 4px;
+    border-radius: 999px;
+    background: linear-gradient(90deg, var(--brand), rgba(255, 122, 0, 0.15));
 }
 
 .trainers-header p {
-    font-size: 1.1rem;
-    color: #666;
-    margin-bottom: 30px;
+    font-size: 1rem;
+    color: var(--text-2);
+    margin-top: 18px;
+    max-width: 650px;
+    margin-left: auto;
+    margin-right: auto;
 }
 
 .trainers-container {
-    display: flex;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
     justify-content: center;
-    flex-wrap: wrap;
-    gap: 30px;
+    gap: 28px;
+    max-width: 1050px;
+    margin: 0 auto;
 }
 
 .trainer {
-    width: 300px;
-    background-color: #fff;
-    border-radius: 8px;
+    background-color: white;
+    border-radius: var(--radius);
     overflow: hidden;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-    transition: transform 0.3s ease;
+    border: var(--card-border);
+    box-shadow: var(--soft-shadow);
+    transition: transform 0.25s ease, box-shadow 0.25s ease;
+    animation: fadeInUp 0.6s ease-out both;
 }
 
+.trainer:nth-child(1) { animation-delay: 0.1s; }
+.trainer:nth-child(2) { animation-delay: 0.2s; }
+.trainer:nth-child(3) { animation-delay: 0.3s; }
+
 .trainer:hover {
-    transform: translateY(-10px); /* Slight popup effect on hover */
+    transform: translateY(-6px);
+    box-shadow: 0 16px 32px rgba(16, 24, 40, 0.12);
+}
+
+.trainer-image {
+    position: relative;
+    overflow: hidden;
+    height: 260px;
 }
 
 .trainer-image img {
     width: 100%;
-    height: auto;
+    height: 100%;
+    object-fit: cover;
     display: block;
+    transition: transform 0.35s ease;
+}
+
+.trainer:hover .trainer-image img {
+    transform: scale(1.06);
 }
 
 .trainer h3 {
-    font-size: 1.5rem;
-    margin-top: 30px;
-    margin-bottom: 5px;
-    color: #333;
+    font-size: 1.35rem;
+    margin-top: 16px;
+    margin-bottom: 4px;
+    color: var(--text-1);
+    font-weight: 700;
 }
 
 .trainer-title {
-    font-style: italic;
-    color: #888;
+    color: var(--brand);
+    font-weight: 600;
+    font-size: 0.83rem;
     margin-bottom: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
 }
 
 .trainer-description {
-    font-size: 0.95rem;
-    color: #555;
-    padding: 0 20px 20px;
+    font-size: 0.88rem;
+    color: var(--text-2);
+    padding: 0 15px 14px;
     line-height: 1.6;
 }
 
 .trainer-social {
     display: flex;
     justify-content: center;
-    padding: 15px 0 20px;
+    padding: 12px 0 16px;
+    gap: 8px;
 }
 
 .trainer-social a {
     display: inline-flex;
     justify-content: center;
     align-items: center;
-    width: 35px;
-    height: 35px;
+    width: 36px;
+    height: 36px;
     border-radius: 50%;
-    background-color: #f4f4f4;
-    color: #333;
-    margin: 0 8px;
+    background-color: #f4f6fa;
+    color: var(--text-1);
     text-decoration: none;
-    transition: all 0.3s ease;
-    border: 1px solid #ddd;
+    transition: all 0.25s ease;
+    border: 1px solid rgba(15, 23, 42, 0.08);
+    font-size: 0.85rem;
 }
 
 .trainer-social a:hover {
-    background-color: #ff2600;
+    background: linear-gradient(120deg, var(--brand), #ff7a00);
     color: #fff;
-    border-color: #ff2600;
+    border-color: var(--brand);
     transform: translateY(-3px);
-    box-shadow: 0 4px 8px rgba(255, 38, 0, 0.3);
+    box-shadow: 0 6px 16px rgba(255, 59, 31, 0.2);
 }
 
 /* Responsive adjustments */
 @media (max-width: 900px) {
-    .trainer {
-        width: 45%;
+    .trainers-container {
+        grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+        gap: 24px;
+    }
+    
+    .trainers {
+        padding: 50px 20px;
+    }
+    
+    .trainers-header h2 {
+        font-size: 2.2rem;
     }
 }
 
 @media (max-width: 600px) {
-    .trainer {
-        width: 90%;
+    .trainers {
+        padding: 40px 16px;
     }
-}
-.trainer:nth-child(1) {
-    border-left: 5px solid #f05a67; /* Example color: reddish */
-}
-
-.trainer:nth-child(2) {
-    border-left: 5px solid #3398dc; /* Example color: blueish */
-}
-
-.trainer:nth-child(3) {
-    border-left: 5px solid #f5b700; /* Example color: yellowish */
+    
+    .trainers-header h2 {
+        font-size: 1.8rem;
+    }
+    
+    .trainers-container {
+        grid-template-columns: 1fr;
+        gap: 18px;
+    }
+    
+    .trainer-image {
+        height: 240px;
+    }
 }
 
 /* BMI Calculator Section */
