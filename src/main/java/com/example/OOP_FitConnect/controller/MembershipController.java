@@ -12,6 +12,7 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 import com.example.OOP_FitConnect.model.MembershipPlan;
@@ -50,15 +51,26 @@ public class MembershipController {
     // Subscribe to a plan (user action)
     @PostMapping("/api/subscribe")
     @ResponseBody
-    public ResponseEntity<?> subscribeToPlan(@RequestBody Map<String, Object> body, HttpServletRequest request) {
+    public ResponseEntity<?> subscribeToPlan(
+            @RequestParam("planId") int planId,
+            @RequestParam(value = "paymentMethod", defaultValue = "Credit Card") String paymentMethod,
+            HttpServletRequest request) {
+        
         HttpSession session = request.getSession(false);
         if (session == null || session.getAttribute("userId") == null) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of("error", "Not logged in"));
         }
 
         int userId = (Integer) session.getAttribute("userId");
-        int planId = ((Number) body.get("planId")).intValue();
-        String paymentMethod = (String) body.getOrDefault("paymentMethod", "Credit Card");
+
+        User user = guestService.getUserById(userId);
+        if (user == null) {
+            return ResponseEntity.badRequest().body(Map.of("error", "User not found"));
+        }
+
+        if (user.getCurrentPlanId() != null) {
+            return ResponseEntity.badRequest().body(Map.of("error", "You already have an active membership plan. You cannot purchase a new plan until your current one expires."));
+        }
 
         MembershipPlan plan = planService.getPlanById(planId);
         if (plan == null) {
@@ -71,14 +83,19 @@ public class MembershipController {
         payment.setPlanId(planId);
         payment.setAmount(plan.getPrice());
         payment.setPaymentMethod(paymentMethod);
-        payment.setStatus("completed");
+        
+        boolean isPending = "Bank Transfer".equalsIgnoreCase(paymentMethod);
+        payment.setStatus(isPending ? "PENDING" : "VERIFIED");
         payment.setPaymentDate(LocalDateTime.now());
         paymentHistoryService.addPayment(payment);
 
-        // Update user's current plan
-        dbController.updateUserPlan(userId, planId);
-
-        return ResponseEntity.ok(Map.of("message", "Subscription successful", "planName", plan.getName()));
+        if (!isPending) {
+            // Update user's current plan immediately for auto-verified methods
+            dbController.updateUserPlan(userId, planId);
+            return ResponseEntity.ok(Map.of("message", "Subscription verified and active", "planName", plan.getName()));
+        } else {
+            return ResponseEntity.ok(Map.of("message", "Payment pending admin verification", "planName", plan.getName()));
+        }
     }
 
     // Get current user's plan info

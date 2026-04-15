@@ -167,7 +167,7 @@
                                     <span class="bg-white/10 px-2 py-1 rounded-lg" th:text="${p.paymentMethod}"></span>
                                 </td>
                                 <td class="px-5 py-3 text-gray-400 text-xs" th:text="${#temporals.format(p.paymentDate,'MMM dd, yyyy')}"></td>
-                                <td class="px-5 py-3 text-right font-semibold text-green-400" th:text="'$' + ${#numbers.formatDecimal(p.amount,1,2)}"></td>
+                                <td class="px-5 py-3 text-right font-semibold text-green-400" th:text="'Rs. ' + ${#numbers.formatDecimal(p.amount,1,2)}"></td>
                                 <td class="px-5 py-3 text-center">
                                     <span th:if="${p.status == 'PENDING'}"                              class="px-2 py-0.5 text-xs font-bold rounded-full bg-orange-500/20 text-orange-400">PENDING</span>
                                     <span th:if="${p.status == 'VERIFIED' or p.status == 'completed'}" class="px-2 py-0.5 text-xs font-bold rounded-full bg-green-500/20  text-green-400">VERIFIED</span>

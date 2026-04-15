@@ -32,6 +32,7 @@ public class WebConfig implements WebMvcConfigurer {
                 "/bmi",
                 "/admin/*",
                 "/instructor/*",
+                "/dietitian/*",
                 "/user/*"
         );
         return registrationBean;

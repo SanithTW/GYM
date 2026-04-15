@@ -35,6 +35,13 @@ public class AuthFilter implements Filter {
                 forbidden(httpRequest, httpResponse, isAjax);
                 return;
             }
+            // Dietitian-only paths (ADMIN can also access for support)
+            if (requestURI.startsWith("/dietitian/")
+                    && !"DIETITIAN".equals(userRole)
+                    && !"ADMIN".equals(userRole)) {
+                forbidden(httpRequest, httpResponse, isAjax);
+                return;
+            }
             chain.doFilter(request, response);
         } else {
             if (isAjax) {

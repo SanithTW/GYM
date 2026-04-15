@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Smart Fitness - Secure Checkout</title>
+    <title>Smart Fitness - Supplement Checkout</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
@@ -19,39 +19,31 @@
 <body class="min-h-screen py-12 px-4 sm:px-6 lg:px-8 flex flex-col items-center justify-center">
 
     <div class="mb-8 text-center">
-        <div class="inline-flex items-center justify-center w-16 h-16 rounded-full bg-blue-600 mb-4 shadow-lg shadow-blue-500/30">
-            <i class="fas fa-dumbbell text-2xl text-white"></i>
+        <div class="inline-flex items-center justify-center w-16 h-16 rounded-full bg-green-600 mb-4 shadow-lg shadow-green-500/30">
+            <i class="fas fa-pills text-2xl text-white"></i>
         </div>
-        <h1 class="text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-600 to-indigo-600">Smart Fitness Checkout</h1>
+        <h1 class="text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-green-600 to-teal-600">Supplement Checkout</h1>
     </div>
 
-    <div th:if="${selectedPlan == null}" class="w-full max-w-md glass-card p-8 text-center text-red-500">
+    <!-- Empty Basket Warning -->
+    <div id="emptyBasketWarning" style="display: none;" class="w-full max-w-md glass-card p-8 text-center text-red-500">
         <i class="fas fa-exclamation-triangle text-4xl mb-4"></i>
-        <h2 class="text-xl font-bold mb-2">Error: No Plan Selected</h2>
-        <p class="text-gray-500 mb-6">Please go back and select a membership plan to purchase.</p>
-        <a href="/membership" class="inline-block bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-6 rounded-lg transition-colors">Return to Plans</a>
+        <h2 class="text-xl font-bold mb-2">Error: Basket Empty</h2>
+        <p class="text-gray-500 mb-6">Please go back and select a supplement to purchase.</p>
+        <a href="/supplements" class="inline-block bg-green-600 hover:bg-green-700 text-white font-medium py-2 px-6 rounded-lg transition-colors">Return to Supplements</a>
     </div>
 
-    <div th:if="${selectedPlan != null}" class="w-full max-w-4xl flex flex-col md:flex-row gap-8">
+    <div id="checkoutFormBlock" style="display: none;" class="w-full max-w-4xl flex flex-col md:flex-row gap-8">
         
         <!-- Summary Section -->
         <div class="w-full md:w-1/3 order-2 md:order-1 glass-card p-8 bg-gradient-to-br from-gray-900 to-gray-800 text-white">
-            <h2 class="text-xl font-bold mb-6 flex items-center gap-2"><i class="fas fa-shopping-cart text-blue-400"></i> Order Summary</h2>
+            <h2 class="text-xl font-bold mb-6 flex items-center gap-2"><i class="fas fa-shopping-cart text-green-400"></i> Order Summary</h2>
             
-            <div class="bg-white/10 rounded-xl p-5 mb-6 border border-white/10">
-                <span class="text-xs font-semibold uppercase tracking-wider text-blue-300 mb-1 block">Membership Plan</span>
-                <h3 class="text-2xl font-bold mb-2" th:text="${selectedPlan.name}">Plan Name</h3>
-                <p class="text-gray-400 text-sm mb-4" th:text="${selectedPlan.description}">Description</p>
-                <div class="flex items-center gap-2 text-sm text-gray-300">
-                    <i class="fas fa-clock text-gray-500"></i> Duration: <span th:text="${selectedPlan.durationMonths}">1</span> Month(s)
-                </div>
+            <div id="orderItemsSummary" class="space-y-3 mb-6 pb-6 border-b border-white/10 text-sm">
+                <!-- Dynamically populated via script -->
             </div>
 
             <div class="space-y-3 mb-6 pb-6 border-b border-white/10 text-sm">
-                <div class="flex justify-between text-gray-400">
-                    <span>Subtotal</span>
-                    <span th:text="'Rs. ' + ${selectedPlan.price}">Rs. 0.00</span>
-                </div>
                 <div class="flex justify-between text-gray-400">
                     <span>Taxes & Fees</span>
                     <span>Rs. 0.00</span>
@@ -60,7 +52,7 @@
 
             <div class="flex justify-between items-center">
                 <span class="text-lg font-medium text-gray-300">Total Due</span>
-                <span class="text-3xl font-bold text-white" th:text="'Rs. ' + ${selectedPlan.price}">Rs. 0.00</span>
+                <span class="text-3xl font-bold text-white" id="totalDueText">Rs. 0.00</span>
             </div>
             
             <div class="mt-8 flex items-center justify-center gap-2 text-xs text-gray-500">
@@ -72,14 +64,14 @@
         <div class="w-full md:w-2/3 order-1 md:order-2 glass-card p-8">
             <h2 class="text-xl font-bold mb-6 text-gray-800 border-b pb-4">Payment Details</h2>
 
-            <form th:action="@{/payment/process}" method="post" id="paymentForm" enctype="multipart/form-data">
-                <input type="hidden" name="planId" th:value="${selectedPlan.id}">
-                <input type="hidden" name="paymentMethod" id="hiddenPaymentMethod" value="Credit Card">
+            <form th:action="@{/supplement-payment/process}" method="post" id="paymentForm" enctype="multipart/form-data">
+                <input type="hidden" name="amount" id="hiddenAmount" value="0">
+                <input type="hidden" name="paymentMethod" id="hiddenPaymentMethod" value="Credit / Debit Card">
 
                 <div class="mb-6">
                     <label class="block text-sm font-medium text-gray-700 mb-3">Select Method</label>
                     <div class="grid grid-cols-2 gap-3">
-                        <div class="payment-method selected rounded-lg p-3 text-center flex flex-col items-center justify-center gap-2" onclick="selectMethod(this, 'Credit Card')">
+                        <div class="payment-method selected rounded-lg p-3 text-center flex flex-col items-center justify-center gap-2" onclick="selectMethod(this, 'Credit / Debit Card')">
                             <i class="fas fa-credit-card text-xl text-gray-600"></i><span class="text-xs font-medium">Card</span>
                         </div>
                         <div class="payment-method rounded-lg p-3 text-center flex flex-col items-center justify-center gap-2" onclick="selectMethod(this, 'Bank Transfer')">
@@ -122,24 +114,69 @@
                         <p>Name: Smart Fitness Pvt Ltd</p>
                     </div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">Upload Transfer Slip</label>
-                    <input type="file" name="transferSlip" id="transferSlipInput" accept="image/*" class="w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100">
+                    <input type="file" name="transferSlip" id="transferSlipInput" accept="image/*" class="w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-green-50 file:text-green-700 hover:file:bg-green-100">
                 </div>
 
-                <button type="submit" class="w-full py-4 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white rounded-xl font-bold text-lg shadow-lg shadow-blue-500/30 transition-all flex justify-center items-center gap-3 active:scale-[0.98]">
-                    <i class="fas fa-lock"></i> Pay <span th:text="'Rs. ' + ${selectedPlan.price}"></span> Now
+                <div class="mb-6">
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Delivery Address</label>
+                    <textarea required class="form-input" rows="2" placeholder="Full Delivery Address"></textarea>
+                </div>
+
+                <button type="submit" class="w-full py-4 bg-gradient-to-r from-green-600 to-teal-600 hover:from-green-700 hover:to-teal-700 text-white rounded-xl font-bold text-lg shadow-lg shadow-green-500/30 transition-all flex justify-center items-center gap-3 active:scale-[0.98]">
+                    <i class="fas fa-lock"></i> Pay <span id="payBtnAmountText"></span> Now
                 </button>
             </form>
         </div>
     </div>
 
     <script th:inline="javascript">
+        document.addEventListener('DOMContentLoaded', function() {
+            let orderItemsData = sessionStorage.getItem('orderItems');
+            if (!orderItemsData) {
+                document.getElementById('emptyBasketWarning').style.display = 'block';
+                return;
+            }
+
+            let orderItems = JSON.parse(orderItemsData);
+            if (orderItems.length === 0) {
+                document.getElementById('emptyBasketWarning').style.display = 'block';
+                return;
+            }
+
+            document.getElementById('checkoutFormBlock').style.display = 'flex';
+
+            let itemsHtml = '';
+            let totalAmount = 0;
+
+            orderItems.forEach(item => {
+                let itemTotal = item.price * item.quantity;
+                totalAmount += itemTotal;
+                itemsHtml += `
+                    <div class="flex justify-between text-gray-300">
+                        <span>${item.quantity}x ${item.name}</span>
+                        <span class="text-white">Rs. ${(itemTotal).toLocaleString()}</span>
+                    </div>
+                `;
+            });
+
+            document.getElementById('orderItemsSummary').innerHTML = itemsHtml;
+            let totalFormatText = 'Rs. ' + totalAmount.toLocaleString();
+            
+            document.getElementById('totalDueText').textContent = totalFormatText;
+            document.getElementById('payBtnAmountText').textContent = totalFormatText;
+            document.getElementById('hiddenAmount').value = totalAmount;
+            
+            // clear cart once processed to prevent resubmission
+            sessionStorage.removeItem('orderItems');
+        });
+
         function selectMethod(el, method) {
             document.querySelectorAll('.payment-method').forEach(m => m.classList.remove('selected'));
             el.classList.add('selected');
             document.getElementById('hiddenPaymentMethod').value = method;
             
             // Hide card details if not card
-            if (method !== 'Credit Card') {
+            if (method !== 'Credit / Debit Card') {
                 document.getElementById('cardDetailsBlock').style.display = 'none';
                 document.getElementById('cardDetailsBlock').style.opacity = '0';
                 document.getElementById('cardDetailsBlock').style.pointerEvents = 'none';
@@ -150,7 +187,7 @@
                 document.getElementById('cardDetailsBlock').style.pointerEvents = 'auto';
                 document.querySelectorAll('#cardDetailsBlock input').forEach(i => i.setAttribute('required', 'true'));
             }
-
+            
             // Handle Bank details
             if (method === 'Bank Transfer') {
                 document.getElementById('bankDetailsBlock').style.display = 'block';

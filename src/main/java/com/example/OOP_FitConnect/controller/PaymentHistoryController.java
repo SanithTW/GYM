@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import com.example.OOP_FitConnect.model.Payment;
+import com.example.OOP_FitConnect.repository.DBController;
 import com.example.OOP_FitConnect.service.PaymentHistoryService;
 
 @Controller
@@ -17,10 +18,12 @@ import com.example.OOP_FitConnect.service.PaymentHistoryService;
 public class PaymentHistoryController {
 
     private final PaymentHistoryService paymentHistoryService;
+    private final DBController dbController;
 
     @Autowired
-    public PaymentHistoryController(PaymentHistoryService paymentHistoryService) {
+    public PaymentHistoryController(PaymentHistoryService paymentHistoryService, DBController dbController) {
         this.paymentHistoryService = paymentHistoryService;
+        this.dbController = dbController;
     }
 
     // ── Payment History Page ──────────────────────────────────────
@@ -48,8 +51,17 @@ public class PaymentHistoryController {
         String newStatus = "verify".equalsIgnoreCase(action) ? "VERIFIED" : "REJECTED";
         paymentHistoryService.updatePaymentStatus(paymentId, newStatus);
 
-        if ("verify".equalsIgnoreCase(action)) {
-            redirectAttributes.addFlashAttribute("success", "Payment #" + paymentId + " has been verified.");
+        if ("VERIFIED".equals(newStatus)) {
+            // Find payment to fulfill
+            Payment p = paymentHistoryService.getAllPayments().stream()
+                .filter(pay -> pay.getId() == paymentId)
+                .findFirst().orElse(null);
+            
+            if (p != null && p.getPlanId() > 0) {
+                // Activate the user's membership plan since payment is now verified
+                dbController.updateUserPlan(p.getUserId(), p.getPlanId());
+            }
+            redirectAttributes.addFlashAttribute("success", "Payment #" + paymentId + " has been verified and user plan activated if applicable.");
         } else {
             redirectAttributes.addFlashAttribute("error", "Payment #" + paymentId + " has been rejected.");
         }

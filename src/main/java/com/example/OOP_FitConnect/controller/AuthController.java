@@ -39,6 +39,9 @@ public class AuthController {
     @Autowired
     private InstructorWorkoutService workoutService;
 
+    @Autowired
+    private com.example.OOP_FitConnect.service.PaymentHistoryService paymentHistoryService;
+
     // ── Guest-accessible pages ─────────────────────────────────────
 
     @GetMapping("/index")
@@ -127,7 +130,22 @@ public class AuthController {
             if (user != null && "USER".equals(user.getRole())) {
                 if (user.getCurrentPlanId() != null) {
                     MembershipPlan plan = planService.getPlanById(user.getCurrentPlanId());
-                    if (plan != null) user.setCurrentPlanName(plan.getName());
+                    if (plan != null) {
+                        user.setCurrentPlanName(plan.getName());
+                        
+                        // Calculate expiry date
+                        com.example.OOP_FitConnect.model.Payment lastPayment = paymentHistoryService.getPaymentsByUserId(userId)
+                            .stream()
+                            .filter(p -> user.getCurrentPlanId().equals(p.getPlanId()) && "completed".equals(p.getStatus()))
+                            .findFirst()
+                            .orElse(null);
+                            
+                        if (lastPayment != null) {
+                            java.time.LocalDateTime expiryDate = lastPayment.getPaymentDate().plusMonths(plan.getDurationMonths());
+                            java.time.format.DateTimeFormatter formatter = java.time.format.DateTimeFormatter.ofPattern("MMM dd, yyyy");
+                            model.addAttribute("planExpiryDate", expiryDate.format(formatter));
+                        }
+                    }
                 }
                 model.addAttribute("user", user);
                 return "profile";

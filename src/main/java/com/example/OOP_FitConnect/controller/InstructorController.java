@@ -343,8 +343,35 @@ public class InstructorController {
         User instructor = getInstructor(request);
         if (instructor == null) return "redirect:/login";
         model.addAttribute("instructor", instructor);
-        model.addAttribute("members", guestService.getAllMembers());
-        return "instructor_dashboard"; // reuse dashboard for now; create dedicated page later
+        
+        List<User> assignedMembers = new ArrayList<>();
+        List<User> allMembers = guestService.getAllMembers();
+        
+        List<DietPlan> plans = dietPlanService.getPlansByInstructor(instructor.getId());
+        List<WorkoutProgram> workouts = workoutService.getProgramsByInstructor(instructor.getId());
+        
+        java.util.Set<Integer> assignedIds = new java.util.HashSet<>();
+        if (plans != null) {
+            for (DietPlan plan : plans) {
+                if (plan.getMemberId() != null) assignedIds.add(plan.getMemberId());
+            }
+        }
+        if (workouts != null) {
+            for (WorkoutProgram wp : workouts) {
+                if (wp.getMemberId() != null) assignedIds.add(wp.getMemberId());
+            }
+        }
+        
+        if (allMembers != null) {
+            for (User u : allMembers) {
+                if (assignedIds.contains(u.getId())) {
+                    assignedMembers.add(u);
+                }
+            }
+        }
+        
+        model.addAttribute("members", assignedMembers);
+        return "instructor_members";
     }
 
     @GetMapping("/schedule")

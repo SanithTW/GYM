@@ -177,25 +177,53 @@
         <h4 style="margin-bottom:10px; color:#ccc;">Select Payment Method</h4>
         <div class="payment-methods">
             <label>
-                <input type="radio" name="paymentMethod" value="Credit Card">
+                <input type="radio" name="paymentMethod" value="Credit / Debit Card">
                 <span class="pm-icon"><i class="fas fa-credit-card"></i></span>
-                <span class="pm-text">Credit Card</span>
-            </label>
-            <label>
-                <input type="radio" name="paymentMethod" value="Debit Card">
-                <span class="pm-icon"><i class="fas fa-money-check"></i></span>
-                <span class="pm-text">Debit Card</span>
+                <span class="pm-text">Credit / Debit Card</span>
             </label>
             <label>
                 <input type="radio" name="paymentMethod" value="Bank Transfer">
                 <span class="pm-icon"><i class="fas fa-university"></i></span>
                 <span class="pm-text">Bank Transfer</span>
             </label>
-            <label>
-                <input type="radio" name="paymentMethod" value="Cash">
-                <span class="pm-icon"><i class="fas fa-money-bill-wave"></i></span>
-                <span class="pm-text">Cash</span>
-            </label>
+        </div>
+
+        <!-- Card Details Block -->
+        <div id="cardDetailsBlock" style="display:none; margin-top:15px;">
+            <div style="margin-bottom:12px;">
+                <label style="display:block; font-size:13px; color:#ccc; margin-bottom:4px;">Name on Card</label>
+                <input type="text" id="cardName" placeholder="John Doe"
+                    style="width:100%; padding:10px 12px; background:rgba(255,255,255,0.08); border:1px solid rgba(255,255,255,0.15); border-radius:8px; color:#fff; font-size:14px; box-sizing:border-box;">
+            </div>
+            <div style="margin-bottom:12px; position:relative;">
+                <label style="display:block; font-size:13px; color:#ccc; margin-bottom:4px;">Card Number</label>
+                <div style="position:relative;">
+                    <i class="fas fa-credit-card" style="position:absolute; left:12px; top:50%; transform:translateY(-50%); color:#888;"></i>
+                    <input type="text" id="cardNumber" placeholder="0000 0000 0000 0000" maxlength="19"
+                        oninput="formatModalCard(this)"
+                        style="width:100%; padding:10px 12px 10px 36px; background:rgba(255,255,255,0.08); border:1px solid rgba(255,255,255,0.15); border-radius:8px; color:#fff; font-size:14px; box-sizing:border-box;">
+                </div>
+            </div>
+            <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:12px;">
+                <div>
+                    <label style="display:block; font-size:13px; color:#ccc; margin-bottom:4px;">Expiry Date</label>
+                    <input type="text" id="cardExpiry" placeholder="MM/YY" maxlength="5"
+                        oninput="formatModalExpiry(this)"
+                        style="width:100%; padding:10px 12px; background:rgba(255,255,255,0.08); border:1px solid rgba(255,255,255,0.15); border-radius:8px; color:#fff; font-size:14px; box-sizing:border-box;">
+                </div>
+                <div>
+                    <label style="display:block; font-size:13px; color:#ccc; margin-bottom:4px;">CVC / CVV</label>
+                    <input type="text" id="cardCvc" placeholder="123" maxlength="4"
+                        style="width:100%; padding:10px 12px; background:rgba(255,255,255,0.08); border:1px solid rgba(255,255,255,0.15); border-radius:8px; color:#fff; font-size:14px; box-sizing:border-box;">
+                </div>
+            </div>
+        </div>
+
+        <!-- Bank Transfer Block -->
+        <div id="transferSlipBlock" style="display: none; margin-top: 15px; padding: 10px; background: rgba(255,255,255,0.05); border-radius: 8px;">
+            <p style="font-size: 12px; color: #fff; margin-bottom: 5px;">Bank: Smart Fitness Bank<br>Account No: 1234-5678-9012<br>Name: Smart Fitness Pvt Ltd</p>
+            <label style="font-size: 13px; color: #ccc;">Upload Transfer Slip:</label>
+            <input type="file" id="transferSlipInput" accept="image/*" style="width:100%; margin-top:5px; background: rgba(255,255,255,0.1); padding: 5px; border-radius: 4px;">
         </div>
         <button class="subscribe-btn" id="confirmSubscribeBtn" onclick="confirmSubscription()" disabled>
             <i class="fas fa-lock"></i> Subscribe Now
@@ -222,8 +250,12 @@
 
         // Enable subscribe button when payment method is selected
         document.querySelectorAll('input[name="paymentMethod"]').forEach(radio => {
-            radio.addEventListener('change', () => {
+            radio.addEventListener('change', (e) => {
                 document.getElementById('confirmSubscribeBtn').disabled = false;
+                const isBank = e.target.value === 'Bank Transfer';
+                const isCard = e.target.value === 'Credit / Debit Card';
+                document.getElementById('transferSlipBlock').style.display = isBank ? 'block' : 'none';
+                document.getElementById('cardDetailsBlock').style.display = isCard ? 'block' : 'none';
             });
         });
     });
@@ -281,8 +313,8 @@
                     <ul>
                         ${features.map(f => `<li>${escapeHtml(f.trim())}</li>`).join('')}
                     </ul>
-                    ${isCurrent
-                        ? '<button class="join-btn subscribed" disabled><i class="fas fa-check"></i> Subscribed</button>'
+                    ${currentPlan != null && currentPlan.id 
+                        ? (isCurrent ? '<button class="join-btn subscribed" disabled><i class="fas fa-check"></i> Active Plan</button>' : '<button class="join-btn" style="background:#555; color:#bbb; cursor:not-allowed;" title="You already have an active plan" disabled><i class="fas fa-lock"></i> Locked</button>')
                         : `<button class="join-btn" onclick="openPaymentModal(${plan.id})"><i class="fas fa-bolt"></i> Join Now</button>`
                     }
                 </div>
@@ -302,6 +334,8 @@
         document.querySelectorAll('input[name="paymentMethod"]').forEach(r => r.checked = false);
         document.getElementById('confirmSubscribeBtn').disabled = true;
         document.getElementById('confirmSubscribeBtn').innerHTML = '<i class="fas fa-lock"></i> Subscribe Now';
+        document.getElementById('transferSlipBlock').style.display = 'none';
+        document.getElementById('transferSlipInput').value = '';
 
         document.getElementById('paymentModal').classList.add('active');
     }
@@ -309,25 +343,59 @@
     function closePaymentModal() {
         document.getElementById('paymentModal').classList.remove('active');
         selectedPlanForModal = null;
+        // Reset card fields
+        ['cardName','cardNumber','cardExpiry','cardCvc'].forEach(id => {
+            const el = document.getElementById(id);
+            if (el) el.value = '';
+        });
+        document.getElementById('cardDetailsBlock').style.display = 'none';
     }
 
     async function confirmSubscription() {
         if (!selectedPlanForModal) return;
         const paymentMethod = document.querySelector('input[name="paymentMethod"]:checked');
         if (!paymentMethod) return;
+        
+        const isBank = paymentMethod.value === 'Bank Transfer';
+        const isCard = paymentMethod.value === 'Credit / Debit Card';
+
+        // Validate card fields
+        if (isCard) {
+            const name = document.getElementById('cardName').value.trim();
+            const number = document.getElementById('cardNumber').value.trim();
+            const expiry = document.getElementById('cardExpiry').value.trim();
+            const cvc = document.getElementById('cardCvc').value.trim();
+            if (!name || !number || !expiry || !cvc) {
+                showToast('Please fill in all card details.', 'error');
+                return;
+            }
+            if (number.replace(/\s/g,'').length < 16) {
+                showToast('Please enter a valid 16-digit card number.', 'error');
+                return;
+            }
+        }
+
+        const fileInput = document.getElementById('transferSlipInput');
+        if (isBank && (!fileInput.files || fileInput.files.length === 0)) {
+            showToast('Please upload a transfer slip for bank transfer.', 'error');
+            return;
+        }
 
         const btn = document.getElementById('confirmSubscribeBtn');
         btn.disabled = true;
         btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Processing...';
 
         try {
+            const formData = new FormData();
+            formData.append('planId', selectedPlanForModal.id);
+            formData.append('paymentMethod', paymentMethod.value);
+            if (isBank) {
+                formData.append('transferSlip', fileInput.files[0]);
+            }
+
             const res = await fetch('/api/subscribe', {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    planId: selectedPlanForModal.id,
-                    paymentMethod: paymentMethod.value
-                })
+                body: formData
             });
 
             if (!res.ok) {
@@ -351,6 +419,19 @@
             btn.innerHTML = '<i class="fas fa-lock"></i> Subscribe Now';
             showToast(e.message || 'Subscription failed. Please try again.', 'error');
         }
+    }
+
+    function formatModalCard(input) {
+        let v = input.value.replace(/\s+/g, '').replace(/[^0-9]/gi, '');
+        let parts = [];
+        for (let i = 0; i < v.length; i += 4) parts.push(v.substring(i, i + 4));
+        input.value = parts.join(' ');
+    }
+
+    function formatModalExpiry(input) {
+        let v = input.value.replace(/\D/g, '');
+        if (v.length >= 2) v = v.substring(0, 2) + '/' + v.substring(2);
+        input.value = v;
     }
 
     async function loadPaymentHistory() {

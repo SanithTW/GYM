@@ -86,7 +86,7 @@ public class GuestService {
         }
 
         String resolvedRole = (role != null && !role.isBlank()) ? role.toUpperCase() : "USER";
-        if (!resolvedRole.equals("INSTRUCTOR")) {
+        if (!resolvedRole.equals("INSTRUCTOR") && !resolvedRole.equals("DIETITIAN")) {
             resolvedRole = "USER";
         }
 
@@ -165,7 +165,7 @@ public class GuestService {
         }
     }
 
-    private void sendEmail(String to, String subject, String body) {
+    public void sendEmail(String to, String subject, String body) {
         SimpleMailMessage message = new SimpleMailMessage();
         message.setTo(to);
         message.setSubject(subject);

@@ -70,12 +70,57 @@ public class PaymentController {
             
             paymentService.addPayment(p);
             
+            // Send payment confirmation email
+            String emailBody = "Hello " + user.getName() + ",\n\n"
+                    + "We have received your payment of R" + plan.getPrice() + " for the " + plan.getName() + " plan.\n"
+                    + "Payment Method: " + paymentMethod + "\n"
+                    + "Your payment is currently PENDING verification by an administrator.\n\n"
+                    + "Thank you,\nSmart Fitness Team";
+            guestService.sendEmail(user.getEmail(), "Payment Confirmation - Smart Fitness", emailBody);
+            
             redirectAttributes.addFlashAttribute("success", "Payment successfully submitted! It is currently Pending Verification.");
             return "redirect:/user/payment-history";
         }
         
         redirectAttributes.addFlashAttribute("error", "Invalid Plan Selected.");
         return "redirect:/membership";
+    }
+
+    @GetMapping("/supplement-payment")
+    public String supplementPaymentPage(HttpServletRequest request, Model model) {
+        User user = getAuthenticatedUser(request);
+        if (user == null) return "redirect:/login";
+
+        return "supplement_payment";
+    }
+
+    @PostMapping("/supplement-payment/process")
+    public String processSupplementPayment(@RequestParam("amount") double amount, 
+                                           @RequestParam("paymentMethod") String paymentMethod,
+                                           HttpServletRequest request, RedirectAttributes redirectAttributes) {
+        User user = getAuthenticatedUser(request);
+        if (user == null) return "redirect:/login";
+
+        Payment p = new Payment();
+        p.setUserId(user.getId());
+        p.setPlanId(0); // 0 indicates it's not a membership plan, but a supplement order
+        p.setAmount(amount);
+        p.setPaymentMethod(paymentMethod);
+        p.setStatus("PENDING"); // Awaiting admin verification
+        p.setPaymentDate(LocalDateTime.now());
+        
+        paymentService.addPayment(p);
+        
+        // Send payment confirmation email
+        String emailBody = "Hello " + user.getName() + ",\n\n"
+                + "We have received your payment of R" + amount + " for your Supplements Order.\n"
+                + "Payment Method: " + paymentMethod + "\n"
+                + "Your payment is currently PENDING verification by an administrator.\n\n"
+                + "Thank you,\nSmart Fitness Team";
+        guestService.sendEmail(user.getEmail(), "Supplement Order Payment Confirmation - Smart Fitness", emailBody);
+        
+        redirectAttributes.addFlashAttribute("success", "Supplement payment successfully submitted! It is currently Pending Verification.");
+        return "redirect:/user/payment-history";
     }
 
     @GetMapping("/user/payment-history")
