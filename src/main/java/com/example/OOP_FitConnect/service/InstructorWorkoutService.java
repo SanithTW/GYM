@@ -36,4 +36,12 @@ public class InstructorWorkoutService {
     public int countByInstructor(int instructorId) {
         return repo.countByInstructorId(instructorId);
     }
+
+    public WorkoutProgram getProgramById(Long id) {
+        return repo.findById(id);
+    }
+
+    public WorkoutProgram updateProgram(WorkoutProgram program) {
+        return repo.update(program);
+    }
 }

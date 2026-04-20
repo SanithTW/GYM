@@ -134,6 +134,30 @@ public class MembershipController {
         return ResponseEntity.ok(paymentHistoryService.getPaymentsByUserId(userId));
     }
 
+    // Delete user's current plan
+    @PostMapping("/api/delete-plan")
+    @ResponseBody
+    public ResponseEntity<?> deleteCurrentPlan(@RequestBody Map<String, Object> request, HttpServletRequest httpRequest) {
+        HttpSession session = httpRequest.getSession(false);
+        if (session == null || session.getAttribute("userId") == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of("error", "Not logged in"));
+        }
+
+        int userId = (Integer) session.getAttribute("userId");
+        User user = guestService.getUserById(userId);
+        if (user == null) {
+            return ResponseEntity.badRequest().body(Map.of("error", "User not found"));
+        }
+
+        if (user.getCurrentPlanId() == null) {
+            return ResponseEntity.badRequest().body(Map.of("error", "No active plan to delete"));
+        }
+
+        // Remove the user's current plan
+        dbController.updateUserPlan(userId, null);
+        return ResponseEntity.ok(Map.of("message", "Plan deleted successfully"));
+    }
+
     @GetMapping("/monthprogress")
     public String monthProgressPage(HttpServletRequest request, Model model) {
         HttpSession session = request.getSession(false);

@@ -44,6 +44,12 @@ public class SupplementService {
             Path filePath = uploadPath.resolve(fileName);
             Files.copy(imageFile.getInputStream(), filePath);
             supplement.setImagePath("/uploads/supplements/" + fileName);
+        } else if (supplement.getId() != null) {
+            // Keep existing image path if not updating image
+            Supplement existing = supplementRepository.findById(supplement.getId());
+            if (existing != null && existing.getImagePath() != null) {
+                supplement.setImagePath(existing.getImagePath());
+            }
         }
         return supplementRepository.save(supplement);
     }

@@ -255,7 +255,7 @@ public class DBController {
 
     public double getTotalRevenue() {
         Double total = jdbcTemplate.queryForObject(
-                "SELECT COALESCE(SUM(amount), 0) FROM payments WHERE status = 'completed'", Double.class
+                "SELECT COALESCE(SUM(amount), 0) FROM payments WHERE status IN ('VERIFIED', 'completed')", Double.class
         );
         return total != null ? total : 0.0;
     }

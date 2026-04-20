@@ -153,15 +153,16 @@
             <!-- Header -->
             <header class="mb-8">
                 <div class="flex items-center gap-3 mb-1">
-                    <a href="/instructor/dashboard" class="text-gray-400 hover:text-white transition-colors duration-200">
+                    <a href="/instructor/workouts" class="text-gray-400 hover:text-white transition-colors duration-200">
                         <i class="fas fa-arrow-left"></i>
                     </a>
-                    <h1 class="text-3xl font-bold bg-gradient-to-r from-blue-400 via-purple-400 to-pink-400 bg-clip-text text-transparent">Create Workout Program</h1>
+                    <h1 class="text-3xl font-bold bg-gradient-to-r from-blue-400 via-purple-400 to-pink-400 bg-clip-text text-transparent" th:text="${workoutProgram.id != null} ? 'Edit Workout Program' : 'Create Workout Program'">Create Workout Program</h1>
                 </div>
-                <p class="text-gray-400 mt-1 ml-7">Build a structured training program for your member</p>
+                <p class="text-gray-400 mt-1 ml-7" th:text="${workoutProgram.id != null} ? 'Update and modify the training program' : 'Build a structured training program for your member'">Build a structured training program for your member</p>
             </header>
 
-            <form th:action="@{/instructor/create-workout}" method="post" th:object="${workoutProgram}">
+            <form th:action="${workoutProgram.id != null} ? @{/instructor/edit-workout} : @{/instructor/create-workout}" method="post" th:object="${workoutProgram}">
+                <input type="hidden" name="programId" th:value="${workoutProgram.id}" th:if="${workoutProgram.id != null}">
 
                 <!-- Program Details -->
                 <div class="glass-effect rounded-xl p-6 mb-6">
@@ -252,12 +253,13 @@
 
                 <!-- Submit -->
                 <div class="flex items-center justify-end gap-4">
-                    <a href="/instructor/dashboard"
+                    <a href="/instructor/workouts"
                        class="px-6 py-3 rounded-xl text-gray-300 hover:text-white border border-white/10 hover:border-white/30 transition-all duration-200 text-sm font-medium">
                         Cancel
                     </a>
                     <button type="submit"
-                            class="px-8 py-3 rounded-xl bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-500 hover:to-blue-500 text-white font-semibold text-sm transition-all duration-200 flex items-center gap-2">
+                            class="px-8 py-3 rounded-xl bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-500 hover:to-blue-500 text-white font-semibold text-sm transition-all duration-200 flex items-center gap-2"
+                            th:text="${workoutProgram.id != null} ? 'Update Program' : 'Save Program'">
                         <i class="fas fa-save"></i>
                         Save Program
                     </button>

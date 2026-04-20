@@ -325,6 +325,83 @@ public class InstructorController {
         return "instructor_workouts";
     }
 
+    @GetMapping("/edit-workout")
+    public String editWorkoutForm(HttpServletRequest request, @RequestParam Long programId, Model model) {
+        User instructor = getInstructor(request);
+        if (instructor == null) return "redirect:/login";
+
+        WorkoutProgram program = workoutService.getProgramById(programId);
+        if (program == null) return "redirect:/instructor/workouts";
+        // Verify instructor owns this program
+        if (program.getInstructorId() != instructor.getId()) {
+            return "redirect:/instructor/workouts";
+        }
+
+        model.addAttribute("instructor", instructor);
+        model.addAttribute("workoutProgram", program);
+        model.addAttribute("members", guestService.getAllMembers());
+        return "instructor_create_workout"; // Reuse the form template
+    }
+
+    @PostMapping("/edit-workout")
+    public String updateWorkout(HttpServletRequest request, RedirectAttributes redirectAttributes) {
+        User instructor = getInstructor(request);
+        if (instructor == null) return "redirect:/login";
+
+        Long programId = Long.parseLong(request.getParameter("programId") != null ? request.getParameter("programId") : "0");
+        WorkoutProgram existing = workoutService.getProgramById(programId);
+        if (existing == null || existing.getInstructorId() != instructor.getId()) {
+            return "redirect:/instructor/workouts";
+        }
+
+        existing.setProgramName(param(request, "programName", "Untitled Program"));
+        existing.setFitnessGoal(param(request, "fitnessGoal", null));
+        existing.setDifficulty(param(request, "difficulty", null));
+        existing.setDescription(param(request, "description", null));
+        existing.setStatus(param(request, "status", "ACTIVE"));
+
+        String memberIdStr = param(request, "memberId", null);
+        if (memberIdStr != null && !memberIdStr.isBlank()) {
+            try { existing.setMemberId(Integer.parseInt(memberIdStr)); } catch (NumberFormatException ignored) {}
+        } else {
+            existing.setMemberId(null);
+        }
+
+        existing.setDurationWeeks(parseNullableInt(param(request, "durationWeeks", null)));
+        existing.setSessionsPerWeek(parseNullableInt(param(request, "sessionsPerWeek", null)));
+        existing.setSessionDurationMin(parseNullableInt(param(request, "sessionDurationMin", null)));
+
+        // Parse days[0].dayName, days[0].focus, days[0].exercises[0].name, ...
+        List<WorkoutDay> days = new ArrayList<>();
+        for (int d = 0; ; d++) {
+            String dayName = request.getParameter("days[" + d + "].dayName");
+            if (dayName == null) break;
+
+            WorkoutDay day = new WorkoutDay();
+            day.setDayName(dayName);
+            day.setFocus(request.getParameter("days[" + d + "].focus"));
+
+            List<WorkoutExercise> exercises = new ArrayList<>();
+            for (int e = 0; ; e++) {
+                String exName = request.getParameter("days[" + d + "].exercises[" + e + "].name");
+                if (exName == null) break;
+                WorkoutExercise ex = new WorkoutExercise();
+                ex.setName(exName);
+                ex.setSets(parseNullableInt(request.getParameter("days[" + d + "].exercises[" + e + "].sets")));
+                ex.setReps(request.getParameter("days[" + d + "].exercises[" + e + "].reps"));
+                ex.setRestSeconds(parseNullableInt(request.getParameter("days[" + d + "].exercises[" + e + "].restSeconds")));
+                exercises.add(ex);
+            }
+            day.setExercises(exercises);
+            days.add(day);
+        }
+        existing.setDays(days);
+
+        workoutService.updateProgram(existing);
+        redirectAttributes.addFlashAttribute("success", "Workout program updated successfully!");
+        return "redirect:/instructor/workouts";
+    }
+
     @PostMapping("/delete-workout")
     public String deleteWorkout(HttpServletRequest request,
                                 @RequestParam Long programId,

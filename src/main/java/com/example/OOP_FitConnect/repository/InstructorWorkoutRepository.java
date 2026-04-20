@@ -179,6 +179,45 @@ public class InstructorWorkoutRepository {
         return c != null ? c : 0;
     }
 
+    public WorkoutProgram findById(Long id) {
+        String sql = "SELECT wp.*, u.name AS member_name FROM workout_programs wp " +
+                     "LEFT JOIN users u ON wp.member_id = u.id " +
+                     "WHERE wp.id = ?";
+        List<WorkoutProgram> programs = jdbcTemplate.query(sql, programMapper, id);
+        if (programs.isEmpty()) return null;
+        WorkoutProgram program = programs.get(0);
+        loadDays(program);
+        return program;
+    }
+
+    public WorkoutProgram update(WorkoutProgram program) {
+        // Update main program table
+        jdbcTemplate.update(
+                "UPDATE workout_programs SET program_name = ?, fitness_goal = ?, difficulty = ?, " +
+                "duration_weeks = ?, sessions_per_week = ?, session_duration_min = ?, description = ?, status = ?, member_id = ? " +
+                "WHERE id = ?",
+                program.getProgramName(), program.getFitnessGoal(), program.getDifficulty(),
+                program.getDurationWeeks(), program.getSessionsPerWeek(), program.getSessionDurationMin(),
+                program.getDescription(), program.getStatus(), program.getMemberId(), program.getId());
+
+        // Delete existing days and exercises
+        List<Long> dayIds = jdbcTemplate.queryForList(
+                "SELECT id FROM workout_days WHERE program_id = ?", Long.class, program.getId());
+        for (Long dayId : dayIds) {
+            jdbcTemplate.update("DELETE FROM workout_exercises WHERE day_id = ?", dayId);
+        }
+        jdbcTemplate.update("DELETE FROM workout_days WHERE program_id = ?", program.getId());
+
+        // Re-save days and exercises
+        if (program.getDays() != null) {
+            int dayOrder = 0;
+            for (WorkoutDay day : program.getDays()) {
+                saveDay(program.getId(), day, dayOrder++);
+            }
+        }
+        return program;
+    }
+
     private void loadDays(WorkoutProgram program) {
         List<WorkoutDay> days = jdbcTemplate.query(
                 "SELECT * FROM workout_days WHERE program_id = ? ORDER BY day_order",

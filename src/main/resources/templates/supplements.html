@@ -643,7 +643,13 @@
             <h1>-------------------------------- Exclusive Supplements --------------------------------</h1>
             <div class="container">
                 <div th:each="sup : ${supplements}" class="food-card">
-                    <img th:src="${sup.imagePath}" th:alt="${sup.name}">
+                    <div style="height: 200px; width: 100%; background-color: #f0f0f0; border-radius: 10px 8px 0 0; overflow: hidden; display: flex; align-items: center; justify-content: center;">
+                        <img th:if="${sup.imagePath != null and sup.imagePath != ''}" th:src="${sup.imagePath}" th:alt="${sup.name}" style="width: 100%; height: 100%; object-fit: cover;">
+                        <div th:if="${sup.imagePath == null or sup.imagePath == ''}" style="text-align: center; color: #999;">
+                            <i class="fas fa-image" style="font-size: 48px; margin-bottom: 10px;"></i>
+                            <p style="margin: 10px 0 0 0;">No Image</p>
+                        </div>
+                    </div>
                     <h2 th:text="${sup.name}">Supplement Name</h2>
                     <p th:text="${sup.description}">Description</p>
                     <p th:text="'Category: ' + ${sup.category}" class="text-sm italic opacity-80"
